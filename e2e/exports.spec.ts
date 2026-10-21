@@ -39,7 +39,7 @@ test('TSV and Excel exports preserve all records, original values, methods and c
     '75th percentile',
   );
   expect((await readSheet(complete, 'Methods and citations')).flat().join(' ')).toContain(
-    'Meyer, A. R. (2026). DataSieve: numerical data exploration and outlier review',
+    'Meyer, A. R. (2026). RangeSieve: numerical data exploration and outlier review',
   );
   expect((await readSheet(complete, 'Methods and citations')).flat().join(' ')).toContain(
     'https://doi.org/10.5281/zenodo.23540904',
@@ -64,7 +64,7 @@ test('introductory method examples, creator credit and citation are visible with
   page,
 }) => {
   await page.goto('/');
-  await expect(page.locator('.brand')).toHaveText('DataSieve');
+  await expect(page.locator('.brand')).toHaveText('RangeSieve');
   await expect(page.locator('.brand svg')).toHaveCount(1);
   await expect(page.locator('.brand-sub')).toHaveCount(0);
   await expect(page.locator('.privacy-notice')).not.toContainText(/client/i);
@@ -90,7 +90,7 @@ test('introductory method examples, creator credit and citation are visible with
   await page.getByRole('button', { name: 'Download software citation' }).click();
   const citation = await readFile((await (await promise).path())!, 'utf8');
   expect(citation).toContain(
-    'Meyer, A. R. (2026). DataSieve: numerical data exploration and outlier review',
+    'Meyer, A. R. (2026). RangeSieve: numerical data exploration and outlier review',
   );
   expect(citation).toContain('https://doi.org/10.5281/zenodo.23540904');
   expect(citation).not.toContain('privacy-first');
@@ -195,7 +195,7 @@ test('horizontal grid visibility applies to every plot and its unbranded SVG exp
   const promise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download figure', exact: true }).click();
   const output = await readFile((await (await promise).path())!, 'utf8');
-  expect(output).not.toContain('DataSieve');
+  expect(output).not.toContain('RangeSieve');
   expect(output).not.toContain('class="ygrid');
   expect(output).toContain('Horizontal grid lines: hidden');
 });
@@ -223,9 +223,9 @@ test('PNG, TIFF, PDF and vector SVG figures have print metadata and reproducible
     const download = await promise;
     expect(download.suggestedFilename()).toBe(`histogram.${format}`);
     const output = await readFile((await download.path())!);
-    expect(output.toString('utf8')).not.toContain('DataSieve');
+    expect(output.toString('utf8')).not.toContain('RangeSieve');
     // PDF text metadata is UTF-16BE, so check that encoding as well.
-    expect(output.toString('latin1')).not.toContain('004400610074006100530069006500760065');
+    expect(output.toString('latin1')).not.toContain('00520061006e0067006500530069006500760065');
     await download.saveAs(testInfo.outputPath(`synthetic-figure.${format}`));
     if (format === 'png') {
       expect([...output.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -235,7 +235,7 @@ test('PNG, TIFF, PDF and vector SVG figures have print metadata and reproducible
       expect(output.toString('utf8')).toContain('IQR fences: multiplier 1.5');
     } else if (format === 'tiff') {
       expect([...output.subarray(0, 4)]).toEqual([73, 73, 42, 0]);
-      expect(output.toString('latin1')).not.toContain('DataSieve');
+      expect(output.toString('latin1')).not.toContain('RangeSieve');
     } else if (format === 'pdf') {
       expect(output.toString('latin1')).toContain('%PDF-1.4');
       expect(output.toString('latin1')).toContain('/FlateDecode');
@@ -268,7 +268,7 @@ test('offline edition creates Excel and all figure formats with networking disab
     if (/^https?:/.test(request.url())) requests.push(request.url());
   });
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto(pathToFileURL(resolve('offline/DataSieve.html')).href);
+  await page.goto(pathToFileURL(resolve('offline/RangeSieve.html')).href);
   await load(page);
   const workbook = await tabularDownload(page, 'xlsx', 'Complete dataset');
   expect(await readSheet(workbook, 'Observations')).toHaveLength(33);

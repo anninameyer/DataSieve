@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 
 function privacyAndOffline(offline: boolean): Plugin {
   return {
-    name: 'datasieve-private-build',
+    name: 'rangesieve-private-build',
     enforce: 'post',
     generateBundle(_options, bundle) {
       const html = bundle['index.html'];
@@ -36,7 +36,7 @@ function privacyAndOffline(offline: boolean): Plugin {
           },
         );
         for (const key of Object.keys(bundle)) if (key !== 'index.html') delete bundle[key];
-        html.fileName = 'DataSieve.html';
+        html.fileName = 'RangeSieve.html';
       }
       const policy = `default-src 'none'; script-src ${offline ? hashes.join(' ') : "'self'"}; style-src 'unsafe-inline'${offline ? '' : " 'self'"}; img-src 'self' data: blob:; font-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'`;
       html.source = content.replace(

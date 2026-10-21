@@ -79,10 +79,10 @@ test('all four exports download valid local artifacts', async ({ page }) => {
   await page.goto('/');
   await example(page);
   for (const [name, filename, expected] of [
-    ['Complete dataset', 'DataSieve-annotated.csv', 'original_sample_identifier'],
-    ['Observations to review', 'DataSieve-flagged.csv', 'review_classification'],
-    ['Statistical summary', 'DataSieve-summary.csv', 'Hyndman–Fan type 7'],
-    ['Analysis report', 'DataSieve-report.html', 'Definitions and limitations'],
+    ['Complete dataset', 'RangeSieve-annotated.csv', 'original_sample_identifier'],
+    ['Observations to review', 'RangeSieve-flagged.csv', 'review_classification'],
+    ['Statistical summary', 'RangeSieve-summary.csv', 'Hyndman–Fan type 7'],
+    ['Analysis report', 'RangeSieve-report.html', 'Definitions and limitations'],
   ]) {
     const promise = page.waitForEvent('download');
     await page.getByRole('button', { name, exact: false }).click();
@@ -92,7 +92,7 @@ test('all four exports download valid local artifacts', async ({ page }) => {
     expect(content).toContain(expected);
     if (name === 'Statistical summary' || name === 'Analysis report') {
       expect(content).toContain('https://doi.org/10.5281/zenodo.23540904');
-      expect(content).toContain('DataSieve: numerical data exploration and outlier review');
+      expect(content).toContain('RangeSieve: numerical data exploration and outlier review');
       expect(content).not.toContain('privacy-first');
     }
   }
@@ -184,9 +184,9 @@ test('works under a repository subpath with relative bundled assets and offline 
   page,
   context,
 }) => {
-  await context.route('**/DataSieve/**', async (route) => {
+  await context.route('**/RangeSieve/**', async (route) => {
     const relative =
-      new URL(route.request().url()).pathname.replace(/^\/DataSieve\//, '') || 'index.html';
+      new URL(route.request().url()).pathname.replace(/^\/RangeSieve\//, '') || 'index.html';
     const path = resolve('dist', relative);
     if (!path.startsWith(resolve('dist') + '/')) return route.abort();
     const contentType = relative.endsWith('.js')
@@ -196,11 +196,11 @@ test('works under a repository subpath with relative bundled assets and offline 
         : 'text/html';
     await route.fulfill({ body: await readFile(path), contentType });
   });
-  await page.goto('/DataSieve/');
+  await page.goto('/RangeSieve/');
   await example(page);
   await expect(page.getByRole('link', { name: 'Download offline edition' })).toHaveAttribute(
     'href',
-    './DataSieve.html',
+    './RangeSieve.html',
   );
 });
 
@@ -213,10 +213,10 @@ test('the website download opens as a standalone application without network acc
   const pendingDownload = page.waitForEvent('download');
   await page.getByRole('link', { name: 'Download offline edition' }).click();
   const download = await pendingDownload;
-  expect(download.suggestedFilename()).toBe('DataSieve.html');
-  const downloadedPath = testInfo.outputPath('DataSieve.html');
+  expect(download.suggestedFilename()).toBe('RangeSieve.html');
+  const downloadedPath = testInfo.outputPath('RangeSieve.html');
   await download.saveAs(downloadedPath);
-  expect((await readFile(downloadedPath)).equals(await readFile('offline/DataSieve.html'))).toBe(
+  expect((await readFile(downloadedPath)).equals(await readFile('offline/RangeSieve.html'))).toBe(
     true,
   );
 
@@ -262,7 +262,7 @@ test('standalone file works offline with CSP, identical results, all plots and l
   page.on('console', (message) => {
     if (message.text().includes('Content Security Policy')) csp.push(message.text());
   });
-  await page.goto(pathToFileURL(resolve('offline/DataSieve.html')).href);
+  await page.goto(pathToFileURL(resolve('offline/RangeSieve.html')).href);
   await ready(page);
   await example(page);
   await expect(page.getByTestId('review-count')).toHaveText('6');
@@ -385,7 +385,7 @@ test('desktop dashboard visual review and offline package parity', async ({ page
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('dashboard-desktop.png') });
   await page.screenshot({ path: testInfo.outputPath('dashboard-full.png'), fullPage: true });
-  expect(await readFile('offline/DataSieve.html', 'utf8')).toBe(
-    await readFile('dist/DataSieve.html', 'utf8'),
+  expect(await readFile('offline/RangeSieve.html', 'utf8')).toBe(
+    await readFile('dist/RangeSieve.html', 'utf8'),
   );
 });

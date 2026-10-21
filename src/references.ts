@@ -1,13 +1,13 @@
 export const SOFTWARE = {
-  name: 'DataSieve',
-  title: 'DataSieve: numerical data exploration and outlier review',
+  name: 'RangeSieve',
+  title: 'RangeSieve: numerical data exploration and outlier review',
   version: '1.0.0',
   releaseDate: '2026-10-21',
   author: 'Annina R. Meyer',
   citationAuthor: 'Meyer, A. R.',
   orcid: 'https://orcid.org/0009-0006-3110-6598',
   handle: '@anninameyer',
-  repository: 'https://github.com/anninameyer/DataSieve',
+  repository: 'https://github.com/anninameyer/RangeSieve',
   profile: 'https://github.com/anninameyer',
   // This DOI identifies v1.0.0; update it when a different software version is archived.
   doi: '10.5281/zenodo.23540904',
@@ -22,7 +22,7 @@ export const references = [
     title:
       'Hyndman, R. J., & Fan, Y. (1996). Sample Quantiles in Statistical Packages. The American Statistician, 50(4), 361–365.',
     url: 'https://doi.org/10.1080/00031305.1996.10473566',
-    use: 'Source of the quantile classification; DataSieve implements type 7.',
+    use: 'Source of the quantile classification; RangeSieve implements type 7.',
   },
   {
     id: 'iqr',
@@ -53,7 +53,7 @@ export const references = [
     id: 'plotly',
     title: 'Plotly, Inc. Plotly.js, version 3.7.0 [Software].',
     url: 'https://github.com/plotly/plotly.js/tree/v3.7.0',
-    use: 'Interactive figures. DataSieve computes its own statistics; R is not used to run the analysis.',
+    use: 'Interactive figures. RangeSieve computes its own statistics; R is not used to run the analysis.',
   },
 ];
 
@@ -77,7 +77,7 @@ export const methods = [
     example:
       'For 1, 2, 3, 4, 5: Q1 = 2, median = 3 and Q3 = 4. At the 95th percentile, h = 3.8, so Q(0.95) = 0.2 × 4 + 0.8 × 5 = 4.8. Interpolation does not create a new observation.',
     detail:
-      'Different quartile rules can produce different outlier flags, especially in small samples. DataSieve consistently uses Hyndman–Fan type 7 in statistics, figures and exports.',
+      'Different quartile rules can produce different outlier flags, especially in small samples. RangeSieve consistently uses Hyndman–Fan type 7 in statistics, figures and exports.',
   },
   {
     title: 'IQR screening',

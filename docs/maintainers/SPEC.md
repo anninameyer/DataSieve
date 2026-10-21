@@ -1,8 +1,8 @@
-DataSieve — Application Specification
+RangeSieve — Application Specification
 
 1. Project overview
 
-DataSieve is a privacy-first, browser-based application for exploring numerical datasets, identifying statistical outliers, and evaluating potentially implausible observations.
+RangeSieve is a privacy-first, browser-based application for exploring numerical datasets, identifying statistical outliers, and evaluating potentially implausible observations.
 
 It is designed primarily for scientific researchers working with experimental, observational, and citizen-science datasets.
 
@@ -37,7 +37,7 @@ Avoid unnecessary dependencies.
 The same application code must produce:
 
 1. A static website suitable for GitHub Pages.
-2. A self-contained HTML file named DataSieve.html.
+2. A self-contained HTML file named RangeSieve.html.
 
 The offline file must contain all required JavaScript, CSS, and other assets.
 
@@ -452,7 +452,7 @@ Configure GitHub Actions to:
 
 The offline and online versions must be generated from the same source code.
 
-Ensure the GitHub Pages application works correctly under a repository subpath such as /DataSieve/.
+Ensure the GitHub Pages application works correctly under a repository subpath such as /RangeSieve/.
 
 15. Acceptance criteria
 

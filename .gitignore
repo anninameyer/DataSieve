@@ -148,7 +148,7 @@ vite.config.ts.timestamp-*
 # Turbo Repo
 .turbo
 
-# Generated DataSieve distributions and browser test output
+# Generated RangeSieve distributions and browser test output
 offline/
 playwright-report/
 test-results/

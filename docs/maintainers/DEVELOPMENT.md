@@ -1,6 +1,6 @@
 # Development and deployment
 
-Technical setup, testing, builds, and deployment instructions for DataSieve maintainers. For using the application, see the [README](../../README.md).
+Technical setup, testing, builds, and deployment instructions for RangeSieve maintainers. For using the application, see the [README](../../README.md).
 
 ## Local development
 
@@ -24,24 +24,24 @@ npm run preview
 
 | Output                                                                                | Purpose                                                          |
 | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `dist/index.html`, `dist/assets/`                                                     | Static website; relative paths support `/DataSieve/`             |
-| `offline/DataSieve.html`                                                              | Single-file offline application, opened directly using `file://` |
-| `dist/DataSieve.html`                                                                 | Identical offline file, downloaded from the online sidebar       |
+| `dist/index.html`, `dist/assets/`                                                     | Static website; relative paths support `/RangeSieve/`            |
+| `offline/RangeSieve.html`                                                             | Single-file offline application, opened directly using `file://` |
+| `dist/RangeSieve.html`                                                                | Identical offline file, downloaded from the online sidebar       |
 | `dist/{README.md,METHODS.md,CITING.md,CITATION.cff,LICENSE,THIRD_PARTY_LICENSES.txt}` | User documentation, citation metadata and attribution            |
 
-Distribute **only `offline/DataSieve.html`** for a single-file handoff. Its license notices are embedded. Download it, disconnect, and double-click it in a modern browser. No local web server, extension, account, or installation is required. The file is an application, never a saved analysis. Reports/CSVs contain data and should be shared deliberately.
+Distribute **only `offline/RangeSieve.html`** for a single-file handoff. Its license notices are embedded. Download it, disconnect, and double-click it in a modern browser. No local web server, extension, account, or installation is required. The file is an application, never a saved analysis. Reports/CSVs contain data and should be shared deliberately.
 
 Both builds use `src/main.tsx`. The offline build inlines the same compiled code/styles, uses a classic script authorized by a SHA-256 CSP hash, and needs no module loading over `file://`. Packaging checks for external script/style references and embeds attribution. Build outputs are ignored by Git and recreated in CI.
 
 ## Enable GitHub Pages
 
 1. Push this repository, including `package-lock.json`, to GitHub on `main` or `master`.
-2. Open [**Settings → Pages**](https://github.com/anninameyer/DataSieve/settings/pages), find **Build and deployment**, and choose **GitHub Actions** as the source. Ensure repository Actions are enabled.
-3. Push a commit or open [**Actions → Test, build, and deploy DataSieve**](https://github.com/anninameyer/DataSieve/actions/workflows/pages.yml) and select **Run workflow**.
+2. Open [**Settings → Pages**](https://github.com/anninameyer/RangeSieve/settings/pages), find **Build and deployment**, and choose **GitHub Actions** as the source. Ensure repository Actions are enabled.
+3. Push a commit or open [**Actions → Test, build, and deploy RangeSieve**](https://github.com/anninameyer/RangeSieve/actions/workflows/pages.yml) and select **Run workflow**.
 4. The workflow installs locked dependencies, runs Vitest, type-checks/builds both editions, installs Chromium, and runs Playwright, including the disconnected `file://` test. Deployment requires successful verification.
-5. Once both the **verify** and **deploy** jobs succeed, **[open DataSieve](https://anninameyer.github.io/DataSieve/)**. The sidebar offers the offline edition. The **DataSieve-offline** workflow artifact also contains it (90-day retention); artifact downloads may require GitHub login, whereas the Pages download does not.
+5. Once both the **verify** and **deploy** jobs succeed, **[open RangeSieve](https://anninameyer.github.io/RangeSieve/)**. The sidebar offers the offline edition. The **RangeSieve-offline** workflow artifact also contains it (90-day retention); artifact downloads may require GitHub login, whereas the Pages download does not.
 
-To check a new deployment, select **Try an example**, confirm the figures and review table appear, and export a table and a figure. Then select **Download offline edition**, disconnect from the internet, and open the downloaded `DataSieve.html` in your browser. Try the example and an export again. If the website still shows an older interface, reload without the browser cache.
+To check a new deployment, select **Try an example**, confirm the figures and review table appear, and export a table and a figure. Then select **Download offline edition**, disconnect from the internet, and open the downloaded `RangeSieve.html` in your browser. Try the example and an export again. If the website still shows an older interface, reload without the browser cache.
 
 Pull requests run all checks and create artifacts without deploying. No custom secrets/backend are needed. The verify job has read-only repository access; only the deployment job has Pages write/OIDC permissions. Actual repository settings and hosted deployment require the repository owner; a local build does not publish remotely.
 

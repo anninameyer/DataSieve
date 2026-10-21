@@ -259,7 +259,7 @@ export default function App() {
     setFlagged(false);
     setSort('source');
     setPage(0);
-    setNotice('Session cleared. No data is stored by DataSieve.');
+    setNotice('Session cleared. No data is stored by RangeSieve.');
   }
   function exportFile(kind: string) {
     if (!canExport) return;
@@ -267,7 +267,7 @@ export default function App() {
     try {
       if (kind === 'report')
         download(
-          'DataSieve-report.html',
+          'RangeSieve-report.html',
           reportHtml(analysis, parsed, variable, criteria),
           'text/html;charset=utf-8',
         );
@@ -292,13 +292,13 @@ export default function App() {
             ],
           });
           download(
-            `DataSieve-${kind}.xlsx`,
+            `RangeSieve-${kind}.xlsx`,
             workbook(sheets),
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           );
         } else
           download(
-            `DataSieve-${kind}.${tableFormat}`,
+            `RangeSieve-${kind}.${tableFormat}`,
             delimited(rows, tableFormat === 'tsv' ? '\t' : ','),
             tableFormat === 'tsv'
               ? 'text/tab-separated-values;charset=utf-8'
@@ -324,7 +324,7 @@ export default function App() {
           <span className="brand-icon">
             <Icon name="sieve" size={25} />
           </span>
-          <span>DataSieve</span>
+          <span>RangeSieve</span>
         </a>
         <div className="workspace-label">YOUR WORKSPACE</div>
         <nav aria-label="Analysis workflow">
@@ -357,14 +357,14 @@ export default function App() {
             <Icon name="help" /> Methods &amp; limitations
           </a>
           {!offline && (
-            <a className="subtle-link" href="./DataSieve.html" download>
+            <a className="subtle-link" href="./RangeSieve.html" download>
               <Icon name="download" /> Download offline edition
             </a>
           )}
           <button className="subtle-link" onClick={clearSession}>
             <Icon name="trash" /> Clear session
           </button>
-          <small className="version">DataSieve 1.0.0 · Open source</small>
+          <small className="version">RangeSieve 1.0.0 · Open source</small>
         </div>
       </aside>
       <div className="main-shell">
@@ -1114,7 +1114,7 @@ export default function App() {
                 R’s type 7 quantile definition
               </a>
               . External references open only when you choose a link. Refreshing or closing clears
-              entered data; DataSieve uses no persistent browser storage. Browser or
+              entered data; RangeSieve uses no persistent browser storage. Browser or
               operating-system clipboard, form restoration, and downloads are outside the
               application’s control.
             </p>
@@ -1122,7 +1122,7 @@ export default function App() {
           <section id="citation" className="panel citation-panel">
             <SectionTitle
               step="REPRODUCIBLE RESEARCH"
-              title="Cite DataSieve"
+              title="Cite RangeSieve"
               description="Credit the tool and record the version and thresholds used in your analysis."
             />
             <p>
@@ -1144,7 +1144,7 @@ export default function App() {
             <button
               className="button secondary"
               onClick={() =>
-                download('DataSieve-citation.txt', softwareCitation(), 'text/plain;charset=utf-8')
+                download('RangeSieve-citation.txt', softwareCitation(), 'text/plain;charset=utf-8')
               }
             >
               Download software citation
@@ -1170,14 +1170,14 @@ export default function App() {
           </section>
           <footer className="page-footer">
             <span className="footer-brand">
-              <Icon name="sieve" size={18} /> DataSieve
+              <Icon name="sieve" size={18} /> RangeSieve
             </span>
             <span>
               Created by {SOFTWARE.author} (
               <a href={SOFTWARE.profile} target="_blank" rel="noreferrer">
                 {SOFTWARE.handle}
               </a>
-              ) · <a href="#citation">Cite DataSieve</a>
+              ) · <a href="#citation">Cite RangeSieve</a>
             </span>
             <span>v1.0.0 · MIT license</span>
           </footer>

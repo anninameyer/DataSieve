@@ -1,8 +1,8 @@
 # Methods and interpretation
 
-This guide explains how to prepare data, understand the results and report your analysis in DataSieve v1.0.0. [Open DataSieve](https://anninameyer.github.io/DataSieve/) or return to the [quick start](README.md).
+This guide explains how to prepare data, understand the results and report your analysis in RangeSieve v1.0.0. [Open RangeSieve](https://anninameyer.github.io/RangeSieve/) or return to the [quick start](README.md).
 
-**An outlier flag is a prompt for review, not proof of an error.** DataSieve keeps the original observations and does not automatically delete them.
+**An outlier flag is a prompt for review, not proof of an error.** RangeSieve keeps the original observations and does not automatically delete them.
 
 ## Prepare and check your data
 
@@ -10,11 +10,11 @@ Copy two columns from a spreadsheet: sample identifiers and one numerical variab
 
 Check the preview before selecting **Analyze dataset**. If the columns or first row are interpreted incorrectly, open **Import settings** and select the delimiter, header setting and columns. Identifiers with leading zeroes are preserved. Duplicate identifiers remain separate observations; blank identifiers receive display labels such as `Row 3`.
 
-Enter the variable name and unit separately. Values should contain numbers without unit symbols or thousands separators. Within a numerical field, a comma means a decimal separator: `1,234` means 1.234. If a line such as `1,5` could mean either two columns or one decimal-comma value, DataSieve asks you to choose the delimiter.
+Enter the variable name and unit separately. Values should contain numbers without unit symbols or thousands separators. Within a numerical field, a comma means a decimal separator: `1,234` means 1.234. If a line such as `1,5` could mean either two columns or one decimal-comma value, RangeSieve asks you to choose the delimiter.
 
 Empty fields and `NA`, `N/A`, `NaN`, `null`, `missing` or a single dot are treated as **missing**. Other text, dates, infinity, malformed rows and numbers outside the supported numerical range are **invalid**. Whole empty lines are ignored. Missing and invalid observations stay in the review table and exports and do not enter numerical calculations.
 
-DataSieve accepts up to **50,000 data rows** or **5 million characters**. Input beyond these limits is rejected rather than shortened. Each valid row has equal weight; repeated identifiers do not combine observations.
+RangeSieve accepts up to **50,000 data rows** or **5 million characters**. Input beyond these limits is rejected rather than shortened. Each valid row has equal weight; repeated identifiers do not combine observations.
 
 ## Summary statistics
 
@@ -28,7 +28,7 @@ Here, **n** is the number of valid numerical observations. Missing and invalid r
 | Minimum and maximum             | The smallest and largest valid values.                                                                               |
 | Quartiles Q1 and Q3             | The 25th and 75th percentiles, marking the central part of the distribution.                                         |
 | Interquartile range (IQR)       | `Q3 − Q1`, the distance between those quartiles.                                                                     |
-| Percentiles                     | Positions in the sorted distribution; DataSieve also reports the 1st, 5th, 95th and 99th percentiles.                |
+| Percentiles                     | Positions in the sorted distribution; RangeSieve also reports the 1st, 5th, 95th and 99th percentiles.               |
 | Median absolute deviation (MAD) | The median of the distances from the median: `median(abs(value − median))`. The displayed MAD has no scaling factor. |
 
 **Example:** for `1, 2, 3, 4, 10`, the mean is 4, median is 3, sample SD is about 3.54, Q1 is 2, Q3 is 4, IQR is 2 and MAD is 1.
@@ -37,7 +37,7 @@ With no valid values, numerical summaries are unavailable. With one value, the m
 
 ### How quartiles and percentiles are calculated
 
-DataSieve uses **Hyndman–Fan type 7**, a defined rule for interpolating between sorted observations. For percentile proportion `p` (for example, 0.95 for the 95th percentile), its position is `1 + (n − 1)p`, counting the first observation as position 1. A fractional position is interpolated between its two neighboring values.
+RangeSieve uses **Hyndman–Fan type 7**, a defined rule for interpolating between sorted observations. For percentile proportion `p` (for example, 0.95 for the 95th percentile), its position is `1 + (n − 1)p`, counting the first observation as position 1. A fractional position is interpolated between its two neighboring values.
 
 **Example:** for `1, 2, 3, 4, 5`, the 95th-percentile position is `1 + 4 × 0.95 = 4.8`. It lies 80% of the way from 4 to 5, giving 4.8. This calculated percentile is not an additional observation.
 
@@ -117,10 +117,10 @@ Exported figures show **all valid observations**, even when sensitivity exclusio
 
 ## Privacy and practical limitations
 
-DataSieve processes data in your browser and does not upload it or automatically save your analysis. **Download results before reloading or closing the application.** The offline HTML file is a reusable application, not a saved dataset or session. Browser and operating-system features such as clipboard history, downloaded files and session restoration remain subject to their own settings.
+RangeSieve processes data in your browser and does not upload it or automatically save your analysis. **Download results before reloading or closing the application.** The offline HTML file is a reusable application, not a saved dataset or session. Browser and operating-system features such as clipboard history, downloaded files and session restoration remain subject to their own settings.
 
 Calculations use standard numerical precision of approximately 15–17 significant digits. Long numbers receive precision warnings; their original text remains available. Unavailable calculations or checks are reported as unavailable rather than treated as negative results. Rescale units if the application explains that a numerical range cannot be plotted or calculated reliably. Displayed summaries are rounded for readability; numerical text exports retain the available calculation precision.
 
-Screening results depend on sample size, distribution shape, precision, thresholds and scientific assumptions. Small, skewed, bounded, multimodal, discrete or dependent datasets require particular care. DataSieve does not supply hypothesis tests, confidence intervals, false-discovery control or a diagnosis of measurement errors. Choosing thresholds after seeing the results can bias later conclusions.
+Screening results depend on sample size, distribution shape, precision, thresholds and scientific assumptions. Small, skewed, bounded, multimodal, discrete or dependent datasets require particular care. RangeSieve does not supply hypothesis tests, confidence intervals, false-discovery control or a diagnosis of measurement errors. Choosing thresholds after seeing the results can bias later conclusions.
 
 See the [citation guide](CITING.md) for the software DOI, full method references and an example manuscript methods statement.

@@ -1,7 +1,7 @@
 import { copyFile, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 
-await copyFile('offline/DataSieve.html', 'dist/DataSieve.html');
+await copyFile('offline/RangeSieve.html', 'dist/RangeSieve.html');
 await writeFile('dist/.nojekyll', '');
 // Ship researcher guides; maintainer records stay in docs/maintainers/ in the source repository.
 for (const file of ['README.md', 'METHODS.md', 'CITING.md', 'CITATION.cff', 'LICENSE'])
@@ -25,10 +25,10 @@ licenses.push(bundledNotices);
 await writeFile('dist/THIRD_PARTY_LICENSES.txt', licenses.join('\n----------------\n\n'));
 await writeFile('offline/THIRD_PARTY_LICENSES.txt', licenses.join('\n----------------\n\n'));
 // Preserve license texts inside the single-file distribution as well.
-const notices = `\n<!-- DataSieve (MIT) and bundled dependency notices\n${((await readFile('LICENSE', 'utf8')) + licenses.join('\n')).replaceAll('--', '—')}\n-->\n`;
-for (const path of ['offline/DataSieve.html', 'dist/DataSieve.html']) {
+const notices = `\n<!-- RangeSieve (MIT) and bundled dependency notices\n${((await readFile('LICENSE', 'utf8')) + licenses.join('\n')).replaceAll('--', '—')}\n-->\n`;
+for (const path of ['offline/RangeSieve.html', 'dist/RangeSieve.html']) {
   const html = (await readFile(path, 'utf8')).split(
-    '\n<!-- DataSieve (MIT) and bundled dependency notices',
+    '\n<!-- RangeSieve (MIT) and bundled dependency notices',
   )[0];
   if (/<(?:script|link)[^>]+(?:src|href)=/i.test(html))
     throw new Error('Offline HTML has external assets');
@@ -41,4 +41,4 @@ for (const path of ['offline/DataSieve.html', 'dist/DataSieve.html']) {
     throw new Error('Offline script must run after its mount element');
   await writeFile(path, html + notices);
 }
-console.log('Packaged dist/ and offline/DataSieve.html from the same application source.');
+console.log('Packaged dist/ and offline/RangeSieve.html from the same application source.');

@@ -57,7 +57,7 @@ export function workbook(sheets: Sheet[]): Uint8Array {
   );
   add(
     'docProps/core.xml',
-    `<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>DataSieve analysis</dc:title><dc:creator>${xml(SOFTWARE.author)}</dc:creator><dc:description>Generated locally by DataSieve ${SOFTWARE.version}. Research data is not uploaded.</dc:description></cp:coreProperties>`,
+    `<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>RangeSieve analysis</dc:title><dc:creator>${xml(SOFTWARE.author)}</dc:creator><dc:description>Generated locally by RangeSieve ${SOFTWARE.version}. Research data is not uploaded.</dc:description></cp:coreProperties>`,
   );
   add(
     'xl/workbook.xml',

@@ -11,12 +11,12 @@ class Boundary extends React.Component<{ children: React.ReactNode }, { failed: 
   render() {
     return this.state.failed ? (
       <main className="fatal">
-        <h1>DataSieve couldn’t complete this analysis</h1>
+        <h1>RangeSieve couldn’t complete this analysis</h1>
         <p>
           Copy your input somewhere safe, then reload to try again. Reloading clears this session.
-          No data has been uploaded or saved by DataSieve.
+          No data has been uploaded or saved by RangeSieve.
         </p>
-        <button onClick={() => location.reload()}>Reload DataSieve</button>
+        <button onClick={() => location.reload()}>Reload RangeSieve</button>
       </main>
     ) : (
       this.props.children
