@@ -2,7 +2,7 @@
 
 **[Open DataSieve →](https://anninameyer.github.io/DataSieve/)**
 
-DataSieve helps researchers explore numerical datasets, identify unusual observations, and assess whether values fall within an expected range. No installation, account, or programming is needed.
+DataSieve helps explore numerical datasets, identify unusual observations, and assess whether values fall within an expected range. No installation, account, or programming is needed.
 
 - Explore interactive histograms, boxplots, and sorted observations.
 - Review potential outliers and compare how selected exclusions affect summary statistics.
@@ -10,7 +10,7 @@ DataSieve helps researchers explore numerical datasets, identify unusual observa
 
 ## Get started
 
-1. **[Open the application](https://anninameyer.github.io/DataSieve/)** and select **Try an example**, or paste two columns from Excel/csv/tsv: sample identifiers and numerical values.
+1. **[Open the application](https://anninameyer.github.io/DataSieve/)** and select **Try an example**, or paste two columns copied from Excel or a CSV/TSV file: sample identifiers and numerical values.
 2. Check the input preview and select **Analyze dataset**.
 3. Explore the results, adjust thresholds or expected bounds, and download your tables and figures.
 
@@ -20,13 +20,13 @@ Select **Download offline edition** in the application’s sidebar. Save `DataSi
 
 ## Privacy
 
-Your research data stays in your browser. DataSieve does not upload or store it. Reloading or closing the application clears the analysis, so download any results you want to keep.
+Your data stays in your browser. DataSieve does not upload it or save your analysis automatically. Reloading or closing the application clears the analysis, so download any results you want to keep.
 
 ## Methods and citation
 
 Outlier flags are prompts for review, not proof of an error. Use study context and domain expertise when deciding whether to exclude observations. See [Methods and limitations](METHODS.md) for explanations and references.
 
-Created by **Annina R. Meyer** ([ORCID](https://orcid.org/0009-0006-3110-6598), [@anninameyer](https://github.com/anninameyer)). If you use DataSieve, cite the software version and methods you used:
+Created by **Annina R. Meyer** ([ORCID](https://orcid.org/0009-0006-3110-6598), [@anninameyer](https://github.com/anninameyer)). If you use DataSieve, please cite the software version and methods you used:
 
 > Meyer, A. R. (2026). _DataSieve: numerical data exploration and outlier review_ (Version 1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23540904
 

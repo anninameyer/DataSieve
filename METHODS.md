@@ -1,146 +1,126 @@
-# DataSieve statistical methods
+# Methods and interpretation
 
-Version 1.0.0. All computation happens in browser memory. No observation is automatically deleted. Screening flags do **not** establish a reporting error.
+This guide explains how to prepare data, understand the results and report your analysis in DataSieve v1.0.0. [Open DataSieve](https://anninameyer.github.io/DataSieve/) or return to the [quick start](README.md).
 
-## Input, missing values, and denominators
+**An outlier flag is a prompt for review, not proof of an error.** DataSieve keeps the original observations and does not automatically delete them.
 
-Each record retains its original identifier, original value text, parsed value, status/diagnostic, and one-based data-record index. Source row numbers exclude a header/empty lines; multiline CSV records count once. Original fields preserve whitespace and leading zeroes. Empty IDs receive display labels `Row …` while their original empty identifier remains in exports. Duplicate IDs remain separate rows, with a warning.
+## Prepare and check your data
 
-Supported text: Excel tabs, RFC-style CSV (quoted fields, doubled quotes, multiline fields), semicolons, columns aligned with two or more spaces, or one value per line. Auto detection examines the first nonempty line and prioritizes tabs, semicolons, unquoted commas, space alignment, then single-column input. Override the delimiter/header/column controls when needed. Space alignment splits two-or-more whitespace characters; use tabs/quoted CSV for identifiers with multiple spaces.
+Copy two columns from a spreadsheet: sample identifiers and one numerical variable. You can also paste CSV or TSV text, or a single column of numerical values. Optional headers, decimal points, decimal commas, negative values and scientific notation are supported.
 
-Header detection is conservative: common identifier headings such as `Sample_ID`, `ID`, `identifier`, `subject_id`, or single-column `value`, `measurement`, or `observation`. Unrecognized first rows are retained; select **Headers present** for other headers. A real ID could resemble a header: select **No headers** to retain it. Always review the preview.
+Check the preview before selecting **Analyze dataset**. If the columns or first row are interpreted incorrectly, open **Import settings** and select the delimiter, header setting and columns. Identifiers with leading zeroes are preserved. Duplicate identifiers remain separate observations; blank identifiers receive display labels such as `Row 3`.
 
-Numeric syntax supports signs, decimals, and scientific notation. Outer whitespace is ignored for interpretation, never removed from the stored original field. Decimal commas work inside unambiguous fields (`S1<TAB>2,5`, `S1;2,5`, `S1,"2,5"`). Numeric-only `1,5` could mean two CSV columns or one decimal-comma value: auto import stops for an explicit choice. **Commas inside fields mean decimals, never thousands grouping**; `1,234` means 1.234. Mixed punctuation, grouping, units, percentages, and dates are not stripped or guessed.
+Enter the variable name and unit separately. Values should contain numbers without unit symbols or thousands separators. Within a numerical field, a comma means a decimal separator: `1,234` means 1.234. If a line such as `1,5` could mean either two columns or one decimal-comma value, DataSieve asks you to choose the delimiter.
 
-Missing values: empty fields or case-insensitive `NA`, `N/A`, `NaN`, `null`, `missing`, or `.`. Other nonnumbers, infinity, input overflow (`1e999`), nonzero underflow (`1e-999`), and incorrect field counts are **invalid**. Malformed/unclosed CSV quotes stop import. Whole empty lines are ignored; rows containing delimiters still count, with empty value fields classified as missing. Input limits are 50,000 data records / 5 million characters; exceeding them rejects input without truncation.
+Empty fields and `NA`, `N/A`, `NaN`, `null`, `missing` or a single dot are treated as **missing**. Other text, dates, infinity, malformed rows and numbers outside the supported numerical range are **invalid**. Whole empty lines are ignored. Missing and invalid observations stay in the review table and exports and do not enter numerical calculations.
 
-Let `N` be input data records and `n` finite valid observations. `N = n + missing + invalid`. All numerical statistics use n valid equally weighted observations; duplicate IDs do not deduplicate values. Missing/invalid records remain in the table and exports and never become zero.
+DataSieve accepts up to **50,000 data rows** or **5 million characters**. Input beyond these limits is rejected rather than shortened. Each valid row has equal weight; repeated identifiers do not combine observations.
 
-## Descriptive statistics
+## Summary statistics
 
-For valid values x₁,…,xₙ:
+Here, **n** is the number of valid numerical observations. Missing and invalid rows are counted separately.
 
-- Arithmetic mean: `x̄ = Σxᵢ/n`.
-- Sample standard deviation: `s = sqrt[Σ(xᵢ−x̄)²/(n−1)]`, unavailable for n < 2.
-- Median: `Q(0.5)`; Q1 = `Q(0.25)`; Q3 = `Q(0.75)`; IQR = Q3−Q1.
-- Percentiles: `Q(0.01)`, `Q(0.05)`, `Q(0.95)`, `Q(0.99)`.
-- Minimum/maximum: smallest/largest valid value.
-- Raw MAD: `median(|xᵢ−median(x)|)`; the displayed MAD has no additional consistency factor.
+| Statistic                       | Meaning                                                                                                              |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Mean                            | The arithmetic average: sum of the values divided by n. Extreme values can strongly affect it.                       |
+| Median                          | The middle value after sorting; for an even number of observations, the average of the two middle values.            |
+| Sample standard deviation (SD)  | A measure of spread around the mean: `sqrt[sum of (value − mean)² / (n − 1)]`. It requires at least two values.      |
+| Minimum and maximum             | The smallest and largest valid values.                                                                               |
+| Quartiles Q1 and Q3             | The 25th and 75th percentiles, marking the central part of the distribution.                                         |
+| Interquartile range (IQR)       | `Q3 − Q1`, the distance between those quartiles.                                                                     |
+| Percentiles                     | Positions in the sorted distribution; DataSieve also reports the 1st, 5th, 95th and 99th percentiles.                |
+| Median absolute deviation (MAD) | The median of the distances from the median: `median(abs(value − median))`. The displayed MAD has no scaling factor. |
 
-With n = 0, numerical quantities are unavailable. With n = 1, location/quantiles equal the observation, IQR/MAD are zero, and SD is unavailable. A constant sample with n ≥ 2 has SD = 0.
+**Example:** for `1, 2, 3, 4, 10`, the mean is 4, median is 3, sample SD is about 3.54, Q1 is 2, Q3 is 4, IQR is 2 and MAD is 1.
 
-### Quantile definition: Hyndman–Fan type 7
+With no valid values, numerical summaries are unavailable. With one value, the median and percentiles equal that value, IQR and MAD are zero, and SD is unavailable. A constant dataset with at least two values has SD = 0.
 
-For sorted zero-indexed x[0] ≤ … ≤ x[n−1] and 0 ≤ p ≤ 1:
+### How quartiles and percentiles are calculated
 
-```text
-h = (n−1)p
-j = floor(h)
-t = h−j
-Q(p) = (1−t)x[j] + t x[j+1]
-```
+DataSieve uses **Hyndman–Fan type 7**, a defined rule for interpolating between sorted observations. For percentile proportion `p` (for example, 0.95 for the 95th percentile), its position is `1 + (n − 1)p`, counting the first observation as position 1. A fractional position is interpolated between its two neighboring values.
 
-When t = 0 return x[j] directly; p = 1 returns the maximum. This is R's default type 7 convention. Other conventions can change fences, especially for small samples. For [0,1,2,3], Q1 = .75, median = 1.5, Q3 = 2.25. Plotly receives these precomputed quartiles rather than selecting another definition.
+**Example:** for `1, 2, 3, 4, 5`, the 95th-percentile position is `1 + 4 × 0.95 = 4.8`. It lies 80% of the way from 4 to 5, giving 4.8. This calculated percentile is not an additional observation.
 
-### Numerical precision
+Different quartile definitions can produce different outlier flags, especially in small samples. State **type 7** when reporting the method. The same quartiles are used in summaries, figures and exports. See [Hyndman and Fan (1996)](https://doi.org/10.1080/00031305.1996.10473566).
 
-Calculations use JavaScript IEEE 754 binary64 (~15–17 significant digits). Fields with more than 15 significant digits or parsed integers outside the safe integer range receive visible precision warnings; finite representable values remain valid and original text is preserved. Mean uses scaling and compensated summation. SD centers around an observed midpoint and scales deviations before squaring, with a magnitude-scaled fallback when subtraction overflows. Quantile interpolation avoids overflowing the difference of extreme opposite-sign numbers. These reduce avoidable error; they are not exact decimal or arbitrary-precision arithmetic. Extreme dynamic ranges and nearly identical huge values can lose precision.
+## IQR outlier screening
 
-Nonfinite derived quantities are unavailable with a warning. An unavailable check is distinct from a negative flag. If one finite fence demonstrates an outlier that positive indicator remains; otherwise an unavailable opposing fence makes the indicator unavailable. Rescale units when needed. Dashboard values round for readability (seven significant digits, or four decimal places in scientific notation); CSV numerical results use full JavaScript round-trip precision.
+IQR screening places lower and upper boundaries, called **fences**, beyond the quartiles:
 
-## IQR screening
+- Lower fence: `Q1 − multiplier × IQR`.
+- Upper fence: `Q3 + multiplier × IQR`.
 
-For configurable positive mild/extreme multipliers kₘ ≤ kₑ (defaults 1.5 and 3):
+The default multipliers are **1.5** for mild outliers and **3** for extreme outliers. You can change them under **Detection settings**; the extreme multiplier must be at least as large as the mild multiplier. A value is flagged only when it is strictly beyond a fence. A value exactly on the fence is not flagged. Extreme observations also carry the general IQR flag.
 
-```text
-L_mild = Q1 − kₘ×IQR       U_mild = Q3 + kₘ×IQR
-L_extreme = Q1 − kₑ×IQR    U_extreme = Q3 + kₑ×IQR
-```
+**Example:** if Q1 = 2 and Q3 = 4, IQR = 2. Mild fences are −1 and 7; extreme fences are −4 and 10. A value of 8 is a mild outlier; 11 is extreme. A value of 10 is beyond the mild fence but exactly on the extreme fence, so it is not extreme.
 
-IQR flag: x < L_mild OR x > U_mild. Extreme flag: x < L_extreme OR x > U_extreme. Comparisons are **strict**; equality is unflagged. Extreme observations also carry the general IQR indicator. Table class is extreme, otherwise mild, otherwise within fences, or unavailable. When IQR = 0 the fences coincide and values beyond them are still flagged.
-
-Boxplot whiskers reach the most extreme **observed** values within mild fences. All valid observations are overlaid with deterministic horizontal jitter that does not change their numerical value. Multipliers update fences, whiskers, flags, and sensitivity comparisons. Histogram bins divide the observed span into equal-width intervals. A tiny outer padding (one millionth of the span at each end) includes the maximum in Plotly’s right-open bins; constant samples receive display padding of max(0.5, 1% of the absolute value). Bars aggregate counts; point-level review colors appear in the other plots. Plotly supplies hover/zoom/reset. Scales beyond approximately 10^±100 or overflowing spans receive explicit rescaling guidance instead of a misleading chart; underlying data remains available.
+When IQR = 0, the fences coincide; values beyond them can still be flagged. This screening convention follows [Tukey (1977), illustrated by NIST](https://www.itl.nist.gov/div898/handbook/prc/section1/prc16.htm).
 
 ## Modified Z-score
 
-```text
-MAD = median(|xᵢ − median|)
-Mᵢ = 0.6745 × (xᵢ − median) / MAD
-Flag if |Mᵢ| > c; default c = 3.5 (configurable, positive)
-```
+The modified Z-score describes how far a value lies from the median relative to MAD. It is less influenced by extreme observations than a score based on the mean and SD:
 
-The constant/cutoff follow the Iglewicz–Hoaglin screening rule discussed by NIST. The table/exports show signed scores; classification uses absolute magnitude.
+`M = 0.6745 × (value − median) / MAD`
 
-**Where does 0.6745 come from?** It rounds the 75th percentile of the standard normal distribution: `Φ⁻¹(0.75) ≈ 0.67448975`. Half of a normal population lies within ±0.67449 population standard deviations of its center, giving population MAD ≈ 0.67449×SD. Multiplying the standardized median/MAD distance by this constant makes its scale comparable with a conventional Z-score for normal data. Computing the score does not require normally distributed observations, and the scaling does not turn the 3.5 cutoff into an error probability.
+The score is negative below the median and positive above it. Screening uses its absolute size: the default flag is **|M| > 3.5**. A score exactly equal to ±3.5 is not flagged. The positive threshold can be changed under **Detection settings**.
 
-**Worked example:** for `[1,2,3,4,10]`, median = 3; absolute distances are `[2,1,0,1,7]`, so MAD = 1. The score of 10 is `0.6745×(10−3)/1 = 4.7215`, which exceeds 3.5. For this same dataset, mean = 4, sample SD ≈ 3.54, Q1 = 2 and Q3 = 4; mild IQR fences are −1/7 and extreme fences are −4/10. The value 10 is a mild IQR outlier and modified-Z outlier but is exactly on the upper extreme fence, so its extreme IQR flag is false. Each method remains independent. Further first-time-reader examples appear in the interface, report, and workbook.
+**Why 0.6745?** It approximates the 75th percentile of a standard normal distribution, about 0.67449. Half of that distribution lies within ±0.67449 standard deviations of its center. Its MAD is therefore about 0.67449 × SD, and the multiplier puts the modified score on a comparable scale. You can calculate the score for non-normal data; the cutoff remains an exploratory screening convention, not a probability that an observation is wrong.
 
-**If MAD = 0**, scores and Z indicators are unavailable for **every** observation, including those equal to the median. No zero, infinity, epsilon, or false indicator is substituted. IQR and range checks remain independent. Unrepresentable individual Z-scores are also unavailable with a warning. This is a screening rule, not a hypothesis test or error diagnosis.
+**Example:** for `1, 2, 3, 4, 10`, the median is 3. The distances from the median are `2, 1, 0, 1, 7`, so MAD = 1. The score for 10 is `0.6745 × (10 − 3) / 1 = 4.7215`, which exceeds 3.5.
 
-## Plausibility range
+**If MAD = 0, modified Z-scores and their flags are unavailable for every observation.** No zero score or negative flag is substituted. IQR and expected-range checks remain available independently. The rule follows [Iglewicz and Hoaglin (1993), explained by NIST](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm).
 
-Expected minimum a and maximum b are optional and **inclusive**. Either can be supplied independently. Violation: `(a supplied AND x < a) OR (b supplied AND x > b)`. At least one boundary is needed for a within/outside assessment; otherwise status is **not specified**. Missing/invalid observations cannot be assessed. Contradictory/nonfinite bounds disable results/exports until corrected.
+## Expected range and plausibility
 
-Ranges encode researcher expectations independently of distributional flags. A violation might represent a rare valid event, wrong units, an unsuitable expectation, or an error; DataSieve cannot decide which.
+Enter an expected minimum, maximum, or both based on scientific knowledge of the variable. Bounds are **inclusive**: values equal to a bound are within range. Leaving both bounds blank gives **Not specified**. Invalid or contradictory bounds must be corrected before continuing.
 
-## Independent indicators and overall review priority
+**Example:** for an expected range of 0–10%, 10% is within range and 11% is outside. An observation can be within the expected range and still be a statistical outlier.
 
-Value status, IQR/extreme flags, signed Z and Z flag, and plausibility remain independent. `Unavailable` differs from `No`; unspecified range differs from an assessment. Overall priority is the first applicable category:
+A range violation might reflect a valid rare event, incorrect units, an unsuitable expectation or a measurement error. Review the source information before deciding how to handle it.
 
-1. Invalid or missing value.
-2. Outside expected range.
-3. Extreme statistical outlier (extreme IQR).
-4. Statistical outlier (general IQR OR modified Z).
-5. No statistical flags.
+## Read the figures and review table
 
-This orders review, not error probability. “No statistical flags” neither establishes correctness nor means every method was available. Modified Z has a single screening threshold, not a separate extreme category. Review-only filters/exports include invalid/missing records. Charts contain valid numerical observations only; the table retains every row.
+The histogram groups valid values into equal-width bins. The boxplot shows the median, quartiles and individual observations; its whiskers reach the most distant observed values within the mild IQR fences. The sorted plot places observations in numerical order. Missing and invalid values appear in the table rather than the figures.
+
+The overall review label prioritizes missing or invalid observations, then values outside the expected range, extreme IQR outliers, other statistical outliers, and finally observations with no statistical flags. Separate flags remain visible: a single observation can meet several criteria. **No statistical flags** does not establish correctness or mean that every check was available.
+
+Use search, sorting and review-only filtering to inspect observations. The underlying dataset is retained. Selecting **Mean line**, **Median line**, **Expected bounds**, **IQR fences** or **Horizontal grid lines** changes the figure display. An expected-bound line requires a specified bound. The histogram’s bin control changes the display rather than the screening thresholds.
 
 ## Sensitivity analysis
 
-All criteria start unselected. Available rules: outside expected range, extreme IQR, all IQR (includes extreme), modified Z. A valid row is excluded if **any** selected rule is positively flagged (OR/union). Overlapping rules count a row once; unavailable checks do not cause exclusion.
+Select one or more criteria to compare summaries for all valid observations with summaries after temporarily excluding matching observations. Criteria combine with **OR**: an observation meeting any selected rule is excluded once, even if it meets several rules. Missing and invalid observations are already outside the numerical calculations.
 
-Flags and thresholds remain fixed to the **full original dataset**. Statistics are recomputed on retained values without iterative outlier removal or threshold refitting. Original rows never change.
+Flags and thresholds stay fixed to the full dataset. Only the retained-data summaries are recalculated. The displayed changes are **retained summary minus full-data summary**. The percentage excluded uses all valid observations as its denominator. If every valid observation is excluded, retained numerical summaries and changes are unavailable.
 
-```text
-excluded = n_all_valid − n_retained
-percent_excluded = 100 × excluded / n_all_valid
-mean_change = mean_retained − mean_all_valid
-median_change = median_retained − median_all_valid
-```
+**Example:** for `1, 2, 3, 4, 10`, setting an expected maximum of 5 and selecting **Outside expected range** temporarily excludes 10. One of five valid values (20%) is excluded. The mean changes from 4 to 2.5, a change of −1.5; the median changes from 3 to 2.5, a change of −0.5.
 
-For no valid data the excluded percentage is zero (“no valid data”); changes are unavailable. Excluding every valid observation yields n = 0 and unavailable retained numerical statistics/changes. Missing/invalid rows are outside numerical denominators and do not count as sensitivity exclusions.
+This comparison shows how much selected observations affect the summaries. It does not justify exclusion or validate later statistical inference. Document scientifically justified corrections and exclusions separately.
 
-This measures dependence of summary statistics on selected observations. It does **not** scientifically justify cleaning, correct bias, or validate downstream inference. Apply domain/source-record review and record real cleaning rules separately.
+## Save results and manuscript figures
 
-## Exports and reproducibility
+Choose **CSV**, **TSV** or **Excel** under **Data export format**:
 
-- Annotated CSV: source row, original/display identifiers, original/parsed values, status/diagnostic, independent flags, signed Z, review priority, sensitivity exclusion.
-- Review CSV: all non-default review categories, including missing/invalid.
-- Summary CSV: metadata, counts, definitions, all descriptive statistics/MAD, multipliers/fences/Z threshold, expected bounds, selected exclusion criteria, retained statistics, excluded count/percentage, changes, warnings. Blank summary values mean unavailable/not specified.
-- HTML report: self-contained/printable/escaped, no executable scripts, with metadata, timestamp, summaries, thresholds, review counts, sensitivity settings/results, methods, limitations. Contains summaries, not the raw dataset or an app session.
+| Export                 | Contents                                                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Complete dataset       | All original rows, values, flags, review labels and sensitivity-exclusion indicators.                                                             |
+| Observations to review | Rows requiring review, including missing and invalid values.                                                                                      |
+| Statistical summary    | Summary statistics, thresholds, expected bounds, sensitivity comparisons, warnings and the software citation.                                     |
+| Analysis report        | A printable HTML report with summaries, settings, worked methods and citations. It does not save an editable analysis session or the raw dataset. |
 
-The three tabular exports are available in **CSV, TSV and Excel (`.xlsx`)**. TSV uses tab separation with the same quoting, BOM, CRLF and text formula protection as CSV. XLSX uses typed original strings, parsed numeric cells, and booleans; it does not create formulas, macros or external links. It contains settings and shared worked-method/citation sheets. An oversized Excel field is rejected explicitly at 32,767 characters; use CSV/TSV instead. Excel’s independent 15-digit numeric precision does not alter the retained original text.
+Excel exports include settings and method/citation sheets. Original identifiers and value text are preserved; spreadsheet programs may round numerical cells or reinterpret CSV/TSV fields. To retain leading zeroes and long original values when importing CSV/TSV, set those columns to **Text**. Potential spreadsheet formulas in text fields are protected with a leading apostrophe. If a field exceeds Excel’s 32,767-character cell limit, use CSV or TSV to retain it in full.
 
-Figures export locally as lossless PNG/TIFF or lossless-image PDF at 300/600 DPI, and as editable vector SVG. Physical size is configurable; resolution metadata is embedded. TIFF is baseline uncompressed 8-bit RGB. PDF is raster, not vector; use SVG for editable lines/text. A white background, full-dataset axes, enabled reference lines, labels and legend are exported, independent of sensitivity exclusions. Horizontal grid visibility applies equally to every plot and its export. Embedded scientific metadata records thresholds, range, bins, palette, line/grid visibility and interpretation; the artwork, metadata and filenames contain no software branding. The separate caption and report retain software version and citation. Viewport zoom is reset for exports, never silently presented as the complete dataset. Default figure colors adapt Okabe–Ito blue/orange/reddish purple/black and use additional marker shapes and line patterns; custom colors are the researcher’s choice and may reduce accessibility. Hex-code inputs supplement native color pickers; choosing a line color enables the corresponding line, with supplied bounds required for expected-range lines. Median and mean reference lines are available in all plots.
+For figures, open **Figure colors & manuscript export**. Choose custom colors with a picker or hex code, or restore the defaults with **Reset figure colors**. Shapes and line styles supplement color; check that custom colors remain distinguishable.
 
-CSV uses RFC 4180 quoting, CRLF, UTF-8 BOM, and spreadsheet formula protection. Text beginning with potential formulas (`= + - @`, allowing leading whitespace) or control characters receives a **leading apostrophe**, unless it is a valid numerical field. This disclosed security transformation does not change the in-memory original. Spreadsheet software can independently reinterpret leading zeroes or large-number precision: import original-value/identifier columns as **Text** when preserving them matters.
+Choose PNG, TIFF, PDF or SVG, print size and resolution (300 or 600 DPI for raster formats). **PDF contains a lossless raster image; SVG provides editable vector graphics.** PNG and TIFF include print-resolution information. Check your journal’s figure requirements. Print dimensions are limited to 80–300 mm and raster images to 25 million pixels; the application explains invalid combinations.
 
-## Interpretation and limitations
+Exported figures show **all valid observations**, even when sensitivity exclusions are selected. Export resets zoom to show the full dataset and uses your selected reference lines, colors and horizontal grid setting. The figure and its embedded metadata have no software branding. **Download figure caption** provides thresholds, settings, methods and the software citation separately.
 
-These complementary exploratory rules are not formal hypothesis tests or a validated error classifier. No p-values, confidence intervals, false-discovery control, normality claim, confirmed-error category, or automatic cleaning advice is supplied. Flags depend on sample size, cutoffs, precision, distribution shape, dependence, and domain assumptions. Skewed, bounded, multimodal, discrete, dependent, very small, or contaminated samples may yield misleading flags or miss errors. Correlated methods can mask outliers or flag valid subpopulations. Choosing cutoffs after seeing results can bias inference.
+## Privacy and practical limitations
 
-Review records, units, instruments, study design, and context. Save an independent audit of justified corrections. DataSieve keeps no persistent session; refresh/clear resets memory. Downloads deliberately save information locally. Browser/OS clipboard, caches, extensions, and session restoration are outside application control.
+DataSieve processes data in your browser and does not upload it or automatically save your analysis. **Download results before reloading or closing the application.** The offline HTML file is a reusable application, not a saved dataset or session. Browser and operating-system features such as clipboard history, downloaded files and session restoration remain subject to their own settings.
 
-## References
+Calculations use standard numerical precision of approximately 15–17 significant digits. Long numbers receive precision warnings; their original text remains available. Unavailable calculations or checks are reported as unavailable rather than treated as negative results. Rescale units if the application explains that a numerical range cannot be plotted or calculated reliably. Displayed summaries are rounded for readability; numerical text exports retain the available calculation precision.
 
-- Hyndman, R. J. & Fan, Y. (1996). _Sample Quantiles in Statistical Packages_. The American Statistician 50(4), 361–365. [DOI](https://doi.org/10.1080/00031305.1996.10473566).
-- R stats: [Sample Quantiles, default type 7](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/quantile.html).
-- NIST/SEMATECH: [Detection of Outliers](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm), including the Iglewicz–Hoaglin modified-Z rule.
-- NIST/SEMATECH: [Outlier boxplot fences](https://www.itl.nist.gov/div898/handbook/prc/section1/prc16.htm).
-- Tukey, J. W. (1977). _Exploratory Data Analysis_. Addison-Wesley. Source for the IQR fence convention; DataSieve uses type-7 quartiles rather than Tukey hinges.
-- Iglewicz, B., & Hoaglin, D. C. (1993). _How to Detect and Handle Outliers_. ASQC Quality Press.
-- NIST Dataplot: [Median Absolute Deviation and normal-consistency scaling](https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/mad.htm).
-- Okabe, M., & Ito, K. [Color Universal Design](https://jfly.uni-koeln.de/color/).
-- Plotly, Inc. [Plotly.js v3.7.0](https://github.com/plotly/plotly.js/tree/v3.7.0), interactive figure software.
+Screening results depend on sample size, distribution shape, precision, thresholds and scientific assumptions. Small, skewed, bounded, multimodal, discrete or dependent datasets require particular care. DataSieve does not supply hypothesis tests, confidence intervals, false-discovery control or a diagnosis of measurement errors. Choosing thresholds after seeing the results can bias later conclusions.
 
-See [CITING.md](CITING.md) for software credit, the archived release DOI, and manuscript citation guidance. R’s documentation describes the matching quantile convention; DataSieve calculates its own statistics and does not execute R.
+See the [citation guide](CITING.md) for the software DOI, full method references and an example manuscript methods statement.

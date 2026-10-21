@@ -1,6 +1,6 @@
 # Development and deployment
 
-Technical setup, testing, builds, and deployment instructions for DataSieve maintainers. For using the application, see the [README](README.md).
+Technical setup, testing, builds, and deployment instructions for DataSieve maintainers. For using the application, see the [README](../../README.md).
 
 ## Local development
 
@@ -22,12 +22,12 @@ npm run build
 npm run preview
 ```
 
-| Output                                                         | Purpose                                                          |
-| -------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `dist/index.html`, `dist/assets/`                              | Static website; relative paths support `/DataSieve/`             |
-| `offline/DataSieve.html`                                       | Single-file offline application, opened directly using `file://` |
-| `dist/DataSieve.html`                                          | Identical offline file, downloaded from the online sidebar       |
-| `dist/{README.md,METHODS.md,LICENSE,THIRD_PARTY_LICENSES.txt}` | Documentation and attribution                                    |
+| Output                                                                                | Purpose                                                          |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `dist/index.html`, `dist/assets/`                                                     | Static website; relative paths support `/DataSieve/`             |
+| `offline/DataSieve.html`                                                              | Single-file offline application, opened directly using `file://` |
+| `dist/DataSieve.html`                                                                 | Identical offline file, downloaded from the online sidebar       |
+| `dist/{README.md,METHODS.md,CITING.md,CITATION.cff,LICENSE,THIRD_PARTY_LICENSES.txt}` | User documentation, citation metadata and attribution            |
 
 Distribute **only `offline/DataSieve.html`** for a single-file handoff. Its license notices are embedded. Download it, disconnect, and double-click it in a modern browser. No local web server, extension, account, or installation is required. The file is an application, never a saved analysis. Reports/CSVs contain data and should be shared deliberately.
 
@@ -82,8 +82,10 @@ vite.config.ts     Shared online/offline builds and CSP
 vitest.config.ts
 playwright.config.ts
 .github/workflows/pages.yml
-SPEC.md            Original requirements
-METHODS.md         Statistical definitions and limitations
-CITING.md          Zenodo setup and manuscript citation guidance
+METHODS.md         Researcher-facing methods and limitations
+CITING.md          Manuscript citation guidance
+docs/maintainers/  Development, implementation, release and requirement records
 CITATION.cff       Machine-readable software citation metadata
 ```
+
+User distributions include the README, methods guide, citation guide, citation metadata and license notices. Keep maintainer documents and the original specification out of `dist/`. See [release maintenance](RELEASING.md) for Zenodo metadata updates.

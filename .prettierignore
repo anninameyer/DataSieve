@@ -4,4 +4,4 @@ offline/
 playwright-report/
 test-results/
 package-lock.json
-SPEC.md
+docs/maintainers/SPEC.md

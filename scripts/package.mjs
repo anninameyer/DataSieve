@@ -3,15 +3,8 @@ import { createHash } from 'node:crypto';
 
 await copyFile('offline/DataSieve.html', 'dist/DataSieve.html');
 await writeFile('dist/.nojekyll', '');
-for (const file of [
-  'README.md',
-  'METHODS.md',
-  'REQUIREMENTS.md',
-  'SPEC.md',
-  'CITING.md',
-  'CITATION.cff',
-  'LICENSE',
-])
+// Ship researcher guides; maintainer records stay in docs/maintainers/ in the source repository.
+for (const file of ['README.md', 'METHODS.md', 'CITING.md', 'CITATION.cff', 'LICENSE'])
   await copyFile(file, `dist/${file}`);
 const licenses = await Promise.all(
   [
