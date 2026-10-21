@@ -143,4 +143,4 @@ Review records, units, instruments, study design, and context. Save an independe
 - Okabe, M., & Ito, K. [Color Universal Design](https://jfly.uni-koeln.de/color/).
 - Plotly, Inc. [Plotly.js v3.7.0](https://github.com/plotly/plotly.js/tree/v3.7.0), interactive figure software.
 
-See [CITING.md](CITING.md) for software credit, version-specific Zenodo DOI setup, and manuscript citation guidance. R’s documentation describes the matching quantile convention; DataSieve calculates its own statistics and does not execute R.
+See [CITING.md](CITING.md) for software credit, the archived release DOI, and manuscript citation guidance. R’s documentation describes the matching quantile convention; DataSieve calculates its own statistics and does not execute R.

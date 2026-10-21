@@ -26,6 +26,10 @@ Your research data stays in your browser. DataSieve does not upload or store it.
 
 Outlier flags are prompts for review, not proof of an error. Use study context and domain expertise when deciding whether to exclude observations. See [Methods and limitations](METHODS.md) for explanations and references.
 
-Created by **Annina R. Meyer** ([ORCID](https://orcid.org/0009-0006-3110-6598), [@anninameyer](https://github.com/anninameyer)). If you use DataSieve, cite the software version and methods you used. See [citation guidance](CITING.md) or select **Cite this repository** on GitHub.
+Created by **Annina R. Meyer** ([ORCID](https://orcid.org/0009-0006-3110-6598), [@anninameyer](https://github.com/anninameyer)). If you use DataSieve, cite the software version and methods you used:
+
+> Meyer, A. R. (2026). _DataSieve: numerical data exploration and outlier review_ (Version 1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23540904
+
+See [citation guidance](CITING.md) or select **Cite this repository** on GitHub.
 
 Free to use under the [MIT license](LICENSE).

@@ -7,7 +7,7 @@ import {
   sensitivity,
   numeric,
 } from './core';
-import { methodText, references, softwareCitation } from './references';
+import { methodText, references, SOFTWARE, softwareCitation } from './references';
 export { methodText } from './references';
 
 export interface Variable {
@@ -138,6 +138,8 @@ export function summaryRows(
     ['Variable', variable.name],
     ['Unit', variable.unit],
     ['Synthetic example', variable.synthetic],
+    ['Software citation', softwareCitation()],
+    ['Creator ORCID', SOFTWARE.orcid],
     ['Quantiles', 'Hyndman–Fan type 7; h = (n−1)p; linear interpolation'],
     ['Standard deviation', 'Sample; denominator n−1'],
     ['Input rows (excluding header and blank lines)', parsed.rows.length],

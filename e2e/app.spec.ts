@@ -88,7 +88,13 @@ test('all four exports download valid local artifacts', async ({ page }) => {
     await page.getByRole('button', { name, exact: false }).click();
     const download = await promise;
     expect(download.suggestedFilename()).toBe(filename);
-    expect(await readFile((await download.path())!, 'utf8')).toContain(expected);
+    const content = await readFile((await download.path())!, 'utf8');
+    expect(content).toContain(expected);
+    if (name === 'Statistical summary' || name === 'Analysis report') {
+      expect(content).toContain('https://doi.org/10.5281/zenodo.23540904');
+      expect(content).toContain('DataSieve: numerical data exploration and outlier review');
+      expect(content).not.toContain('privacy-first');
+    }
   }
 });
 

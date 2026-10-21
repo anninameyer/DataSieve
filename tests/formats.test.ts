@@ -226,6 +226,10 @@ describe('Accessible defaults, reproducible captions and introductory examples',
     expect(caption).toContain('triangle');
     expect(caption).toContain('#0072B2');
     expect(caption).toContain(softwareCitation());
+    expect(caption).toContain(
+      'Meyer, A. R. (2026). DataSieve: numerical data exploration and outlier review',
+    );
+    expect(caption).toContain('https://doi.org/10.5281/zenodo.23540904');
   });
   it('worked examples match the statistical implementation', () => {
     const summary = summarize([1, 2, 3, 4, 10]);

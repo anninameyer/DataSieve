@@ -1,17 +1,20 @@
 export const SOFTWARE = {
   name: 'DataSieve',
+  title: 'DataSieve: numerical data exploration and outlier review',
   version: '1.0.0',
+  releaseDate: '2026-10-21',
   author: 'Annina R. Meyer',
+  citationAuthor: 'Meyer, A. R.',
   orcid: 'https://orcid.org/0009-0006-3110-6598',
   handle: '@anninameyer',
   repository: 'https://github.com/anninameyer/DataSieve',
   profile: 'https://github.com/anninameyer',
-  // Add the version-specific DOI after publishing the archived release; never invent a DOI.
-  doi: '',
+  // This DOI identifies v1.0.0; update it when a different software version is archived.
+  doi: '10.5281/zenodo.23540904',
 };
 
 export const softwareCitation = () =>
-  `${SOFTWARE.author}. DataSieve (version ${SOFTWARE.version}) [Computer software]. ${SOFTWARE.doi ? `https://doi.org/${SOFTWARE.doi}` : SOFTWARE.repository}`;
+  `${SOFTWARE.citationAuthor} (${SOFTWARE.releaseDate.slice(0, 4)}). ${SOFTWARE.title} (Version ${SOFTWARE.version}) [Computer software]. ${SOFTWARE.doi ? `Zenodo. https://doi.org/${SOFTWARE.doi}` : SOFTWARE.repository}`;
 
 export const references = [
   {

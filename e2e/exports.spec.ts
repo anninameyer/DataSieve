@@ -39,7 +39,10 @@ test('TSV and Excel exports preserve all records, original values, methods and c
     '75th percentile',
   );
   expect((await readSheet(complete, 'Methods and citations')).flat().join(' ')).toContain(
-    'Annina R. Meyer',
+    'Meyer, A. R. (2026). DataSieve: numerical data exploration and outlier review',
+  );
+  expect((await readSheet(complete, 'Methods and citations')).flat().join(' ')).toContain(
+    'https://doi.org/10.5281/zenodo.23540904',
   );
   expect(strFromU8(files['docProps/core.xml'])).toContain(
     '<dc:creator>Annina R. Meyer</dc:creator>',
@@ -79,12 +82,18 @@ test('introductory method examples, creator credit and citation are visible with
     'href',
     'https://orcid.org/0009-0006-3110-6598',
   );
-  await expect(page.locator('#citation')).toContainText('No DOI has been assigned yet');
+  await expect(page.locator('#citation')).not.toContainText('No DOI has been assigned yet');
+  await expect(
+    page.locator('#citation').getByRole('link', { name: 'Archived release' }),
+  ).toHaveAttribute('href', 'https://doi.org/10.5281/zenodo.23540904');
   const promise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download software citation' }).click();
   const citation = await readFile((await (await promise).path())!, 'utf8');
-  expect(citation).toContain('Annina R. Meyer. DataSieve');
-  expect(citation).toContain('https://github.com/anninameyer/DataSieve');
+  expect(citation).toContain(
+    'Meyer, A. R. (2026). DataSieve: numerical data exploration and outlier review',
+  );
+  expect(citation).toContain('https://doi.org/10.5281/zenodo.23540904');
+  expect(citation).not.toContain('privacy-first');
 });
 
 test('custom figure colors change the plot and reset to accessible defaults', async ({ page }) => {
@@ -241,6 +250,8 @@ test('PNG, TIFF, PDF and vector SVG figures have print metadata and reproducible
   const caption = await readFile((await (await promise).path())!, 'utf8');
   expect(caption).toContain('No sensitivity exclusions');
   expect(caption).toContain('Hyndman');
+  expect(caption).toContain('https://doi.org/10.5281/zenodo.23540904');
+  expect(caption).not.toContain('privacy-first');
   expect(requests).toEqual([]);
   expect(errors).toEqual([]);
 });
@@ -261,6 +272,9 @@ test('offline edition creates Excel and all figure formats with networking disab
   await load(page);
   const workbook = await tabularDownload(page, 'xlsx', 'Complete dataset');
   expect(await readSheet(workbook, 'Observations')).toHaveLength(33);
+  expect((await readSheet(workbook, 'Methods and citations')).flat().join(' ')).toContain(
+    'https://doi.org/10.5281/zenodo.23540904',
+  );
   await page.getByRole('button', { name: 'Sorted observations', exact: true }).click();
   await page.locator('.figure-settings summary').click();
   for (const format of ['png', 'tiff', 'pdf', 'svg']) {

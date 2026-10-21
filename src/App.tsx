@@ -1136,6 +1136,11 @@ export default function App() {
               </a>
             </p>
             <blockquote className="software-citation">{softwareCitation()}</blockquote>
+            <p>
+              <a href={`https://doi.org/${SOFTWARE.doi}`} target="_blank" rel="noreferrer">
+                Archived release · DOI: {SOFTWARE.doi}
+              </a>
+            </p>
             <button
               className="button secondary"
               onClick={() =>
@@ -1145,10 +1150,9 @@ export default function App() {
               Download software citation
             </button>
             <p className="fine-print">
-              No DOI has been assigned yet. Once a release is archived on Zenodo, cite its
-              version-specific DOI. A software citation credits the creator; method references
-              explain the statistical choices. Include the methods you actually used, following your
-              journal’s policy.
+              Cite the version-specific DOI for the release you used. A software citation credits
+              the creator; method references explain the statistical choices. Include the methods
+              you actually used, following your journal’s policy.
             </p>
             <details>
               <summary>Method and software references</summary>

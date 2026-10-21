@@ -4,28 +4,33 @@
 
 DataSieve was created by **Annina R. Meyer**, [ORCID: 0009-0006-3110-6598](https://orcid.org/0009-0006-3110-6598), [@anninameyer](https://github.com/anninameyer). The interface, report, figure captions, and Excel workbooks use this publication name. The repository’s [CITATION.cff](CITATION.cff) records the author name and ORCID for GitHub’s **Cite this repository** feature and Zenodo’s release metadata.
 
-Before a DOI exists, users can cite:
+Cite the archived release as:
 
-> Meyer, A. R. _DataSieve_ (version 1.0.0) [Computer software]. https://github.com/anninameyer/DataSieve
+> Meyer, A. R. (2026). _DataSieve: numerical data exploration and outlier review_ (Version 1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23540904
 
 Record the software version, applied methods, actual thresholds, quartile convention, domain bounds, and any justified exclusions. A figure caption records these settings; it is not scientific justification for excluding observations. Supplementary material can include the figure, caption, analysis report, and annotated data where sharing is appropriate.
 
-## Recommended: archive releases with Zenodo
+## Archived release
 
-Yes: a DOI-backed archive gives the software a persistent, citable record under its creator’s name. This does **not** require submitting research data. Only publish the software, synthetic examples, documentation, and prepared application builds.
+DataSieve v1.0.0 was published on **21 October 2026**. Its version-specific DOI is **[10.5281/zenodo.23540904](https://doi.org/10.5281/zenodo.23540904)**. The [concept DOI](https://doi.org/10.5281/zenodo.23540903) covers the project across versions; use the version-specific DOI to identify the software used in an analysis.
 
-1. The confirmed creator is Annina R. Meyer, ORCID `https://orcid.org/0009-0006-3110-6598`. Keep `CITATION.cff` and `src/references.ts` consistent. CFF uses `given-names: Annina R.` and `family-names: Meyer`; no affiliation is asserted.
-2. Sign in to Zenodo, link GitHub, and enable `anninameyer/DataSieve` in the GitHub integration. This is an owner action; the app does not connect to Zenodo.
-3. Ensure all checks pass, then create a tagged GitHub release, for example `v1.0.0`. New releases after integration is enabled are archived. Check the resulting Zenodo record and creator order, version, MIT license, title, description, and software resource type.
-4. Confirm which files were archived. GitHub source archives do not contain the ignored `offline/` build. If distributing the single HTML through Zenodo, include the tested `DataSieve.html` in the deposition using the supported Zenodo workflow, or create a manual software deposition containing source and build. Avoid creating competing records for the same release.
-5. Use the resulting **version-specific DOI** in citations for an analysis. Zenodo also supplies a **concept DOI** covering all versions; this suits a general project link rather than identifying the exact version used.
-6. Add the actual version DOI to CFF (`doi:`) and `SOFTWARE.doi` in `src/references.ts`; rebuild the distributed editions. Update the existing archive’s descriptive metadata as appropriate. Never invent a DOI or a publication date. New code changes belong to a new version/release.
+The title is **DataSieve: numerical data exploration and outlier review**. Privacy belongs in the description: all analysis runs in the researcher’s browser, with no research data uploaded or stored by DataSieve. The online and self-contained offline editions share the same application code.
 
-The app uses the DOI once configured and otherwise links the repository. It shows an honest pre-DOI citation. Adding citation metadata locally does not publish a record, mint a DOI, or connect your accounts.
+`CITATION.cff` and `src/references.ts` record the same title, author, publication date, version, and DOI. The interface, downloadable citation, reports, Excel citation sheets, and separate figure captions use the shared citation. Exported figures retain their unbranded artwork and metadata.
 
-Use one metadata source for Zenodo: if `.zenodo.json` is also present, Zenodo gives it priority over `CITATION.cff`. This repository intentionally uses CFF alone.
+## Correcting the published Zenodo title
 
-Official guidance: [Enable a repository](https://help.zenodo.org/docs/github/enable-repository/), [CFF metadata support](https://help.zenodo.org/docs/github/describe-software/citation-file/), [GitHub citation files](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-citation-files), [version DOI versus concept DOI](https://zenodo.org/help/versioning).
+Repository updates do not automatically change an existing Zenodo record. Sign in to Zenodo and open [the v1.0.0 record](https://zenodo.org/records/23540904), select **Edit**, change the title to **DataSieve: numerical data exploration and outlier review**, and put the privacy explanation in the description. Keep the author, ORCID, version, publication date, and DOI. Select **Publish** to apply the metadata changes. Zenodo’s [record-editing instructions](https://help.zenodo.org/docs/deposit/manage-records/#edit-published-records) explain that this preserves the DOI.
+
+Editing the record’s metadata does not modify its archived source ZIP or the existing GitHub release tag. There is no need for a new release just to correct the title. Previously downloaded application files retain their bundled citation; download the updated offline edition from the website to use the corrected citation.
+
+## Future releases
+
+Keep the publication name **Annina R. Meyer**, [ORCID: 0009-0006-3110-6598](https://orcid.org/0009-0006-3110-6598), consistent in the citation metadata. Before a new software release, update the version and release date and remove the previous version’s DOI from the metadata until the new version DOI is available. Do not assign the v1.0.0 DOI to another version.
+
+After successful checks, publish a new tagged GitHub release. The enabled Zenodo integration archives new releases; check the resulting title, author, ORCID, version, license, and files, then add the actual version DOI to the citation metadata and rebuilt application. GitHub source archives exclude the ignored `offline/` build; the ready-to-use offline HTML is distributed through the application’s download button.
+
+Use `CITATION.cff` as the metadata source. If `.zenodo.json` is added, Zenodo uses it instead of CFF, so avoid conflicting copies. See Zenodo’s [CFF support](https://help.zenodo.org/docs/github/describe-software/citation-file/) and [release-archiving instructions](https://help.zenodo.org/docs/github/archive-software/github-upload/).
 
 ## Which methods should a manuscript cite?
 
