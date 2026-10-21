@@ -10,7 +10,7 @@ DataSieve helps researchers explore numerical datasets, identify unusual observa
 
 ## Get started
 
-1. **[Open the application](https://anninameyer.github.io/DataSieve/)** and select **Try an example**, or paste two columns from Excel: sample identifiers and numerical values.
+1. **[Open the application](https://anninameyer.github.io/DataSieve/)** and select **Try an example**, or paste two columns from Excel/csv/tsv: sample identifiers and numerical values.
 2. Check the input preview and select **Analyze dataset**.
 3. Explore the results, adjust thresholds or expected bounds, and download your tables and figures.
 
@@ -26,6 +26,6 @@ Your research data stays in your browser. DataSieve does not upload or store it.
 
 Outlier flags are prompts for review, not proof of an error. Use study context and domain expertise when deciding whether to exclude observations. See [Methods and limitations](METHODS.md) for explanations and references.
 
-Created by [@anninameyer](https://github.com/anninameyer). If you use DataSieve in research, cite the software version and methods you used. See [citation guidance](CITING.md) or select **Cite this repository** on GitHub.
+Created by [@anninameyer](https://github.com/anninameyer). If you use DataSieve, cite the software version and methods you used. See [citation guidance](CITING.md) or select **Cite this repository** on GitHub.
 
 Free to use under the [MIT license](LICENSE).
