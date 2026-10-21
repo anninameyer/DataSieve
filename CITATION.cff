@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: 'If you use DataSieve in research, cite the software version you used and the statistical methods you applied.'
+type: software
+title: 'DataSieve: privacy-first numerical data exploration and outlier review'
+version: 1.0.0
+authors:
+  - name: 'anninameyer'
+    website: 'https://github.com/anninameyer'
+repository-code: 'https://github.com/anninameyer/DataSieve'
+url: 'https://github.com/anninameyer/DataSieve'
+license: MIT
+abstract: 'Browser-based numerical data exploration, outlier screening, plausibility assessment, sensitivity analysis, and local scientific exports. The online and self-contained offline editions share the same source.'
+keywords:
+  - scientific software
+  - exploratory data analysis
+  - outlier screening
+  - reproducible research
+  - privacy
