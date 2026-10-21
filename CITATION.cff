@@ -4,7 +4,9 @@ type: software
 title: 'DataSieve: privacy-first numerical data exploration and outlier review'
 version: 1.0.0
 authors:
-  - name: 'anninameyer'
+  - given-names: 'Annina R.'
+    family-names: 'Meyer'
+    orcid: 'https://orcid.org/0009-0006-3110-6598'
     website: 'https://github.com/anninameyer'
 repository-code: 'https://github.com/anninameyer/DataSieve'
 url: 'https://github.com/anninameyer/DataSieve'

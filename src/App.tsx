@@ -286,6 +286,7 @@ export default function App() {
             rows: [
               ['Topic', 'Explanation or citation'],
               ['Software', softwareCitation()],
+              ['Creator ORCID', SOFTWARE.orcid],
               ...methodText.map(([title, text]) => [title, text]),
               ...references.map((reference) => [reference.title, reference.url]),
             ],
@@ -1125,11 +1126,14 @@ export default function App() {
               description="Credit the tool and record the version and thresholds used in your analysis."
             />
             <p>
-              Created by{' '}
+              Created by {SOFTWARE.author} (
               <a href={SOFTWARE.profile} target="_blank" rel="noreferrer">
                 {SOFTWARE.handle}
               </a>
-              .
+              ).{' '}
+              <a href={SOFTWARE.orcid} target="_blank" rel="noreferrer">
+                ORCID: 0009-0006-3110-6598
+              </a>
             </p>
             <blockquote className="software-citation">{softwareCitation()}</blockquote>
             <button
@@ -1165,11 +1169,11 @@ export default function App() {
               <Icon name="sieve" size={18} /> DataSieve
             </span>
             <span>
-              Created by{' '}
+              Created by {SOFTWARE.author} (
               <a href={SOFTWARE.profile} target="_blank" rel="noreferrer">
                 {SOFTWARE.handle}
-              </a>{' '}
-              · <a href="#citation">Cite DataSieve</a>
+              </a>
+              ) · <a href="#citation">Cite DataSieve</a>
             </span>
             <span>v1.0.0 · MIT license</span>
           </footer>

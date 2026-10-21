@@ -2,11 +2,11 @@
 
 ## Credit for the software
 
-The interface, report, figure captions, and Excel workbooks credit [@anninameyer](https://github.com/anninameyer). The repository includes [CITATION.cff](CITATION.cff), which enables GitHub’s **Cite this repository** feature once pushed. The current metadata uses the verified GitHub handle; substitute the creator’s confirmed publication name and optional ORCID when available. No author identity, DOI, release date, or affiliation is invented.
+DataSieve was created by **Annina R. Meyer**, [ORCID: 0009-0006-3110-6598](https://orcid.org/0009-0006-3110-6598), [@anninameyer](https://github.com/anninameyer). The interface, report, figure captions, and Excel workbooks use this publication name. The repository’s [CITATION.cff](CITATION.cff) records the author name and ORCID for GitHub’s **Cite this repository** feature and Zenodo’s release metadata.
 
 Before a DOI exists, users can cite:
 
-> anninameyer. _DataSieve_ (version 1.0.0) [Computer software]. https://github.com/anninameyer/DataSieve
+> Meyer, A. R. _DataSieve_ (version 1.0.0) [Computer software]. https://github.com/anninameyer/DataSieve
 
 Record the software version, applied methods, actual thresholds, quartile convention, domain bounds, and any justified exclusions. A figure caption records these settings; it is not scientific justification for excluding observations. Supplementary material can include the figure, caption, analysis report, and annotated data where sharing is appropriate.
 
@@ -14,7 +14,7 @@ Record the software version, applied methods, actual thresholds, quartile conven
 
 Yes: a DOI-backed archive gives the software a persistent, citable record under its creator’s name. This does **not** require submitting research data. Only publish the software, synthetic examples, documentation, and prepared application builds.
 
-1. Confirm the creator’s publication name and ORCID in `CITATION.cff` and `src/references.ts`. For a person, use `given-names` and `family-names` in CFF; do not add an unverified affiliation.
+1. The confirmed creator is Annina R. Meyer, ORCID `https://orcid.org/0009-0006-3110-6598`. Keep `CITATION.cff` and `src/references.ts` consistent. CFF uses `given-names: Annina R.` and `family-names: Meyer`; no affiliation is asserted.
 2. Sign in to Zenodo, link GitHub, and enable `anninameyer/DataSieve` in the GitHub integration. This is an owner action; the app does not connect to Zenodo.
 3. Ensure all checks pass, then create a tagged GitHub release, for example `v1.0.0`. New releases after integration is enabled are archived. Check the resulting Zenodo record and creator order, version, MIT license, title, description, and software resource type.
 4. Confirm which files were archived. GitHub source archives do not contain the ignored `offline/` build. If distributing the single HTML through Zenodo, include the tested `DataSieve.html` in the deposition using the supported Zenodo workflow, or create a manual software deposition containing source and build. Avoid creating competing records for the same release.

@@ -39,7 +39,13 @@ test('TSV and Excel exports preserve all records, original values, methods and c
     '75th percentile',
   );
   expect((await readSheet(complete, 'Methods and citations')).flat().join(' ')).toContain(
-    'anninameyer',
+    'Annina R. Meyer',
+  );
+  expect(strFromU8(files['docProps/core.xml'])).toContain(
+    '<dc:creator>Annina R. Meyer</dc:creator>',
+  );
+  expect((await readSheet(complete, 'Methods and citations')).flat().join(' ')).toContain(
+    'https://orcid.org/0009-0006-3110-6598',
   );
   expect(
     await readSheet(await tabularDownload(page, 'xlsx', 'Observations to review'), 'Observations'),
@@ -68,12 +74,17 @@ test('introductory method examples, creator credit and citation are visible with
   await expect(method).toContainText('75th percentile');
   await expect(method).toContainText('4.7215');
   await expect(page.locator('.page-footer')).toContainText('@anninameyer');
+  await expect(page.locator('.page-footer')).toContainText('Annina R. Meyer');
+  await expect(page.locator('#citation').getByRole('link', { name: 'ORCID:' })).toHaveAttribute(
+    'href',
+    'https://orcid.org/0009-0006-3110-6598',
+  );
   await expect(page.locator('#citation')).toContainText('No DOI has been assigned yet');
   const promise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download software citation' }).click();
-  expect(await readFile((await (await promise).path())!, 'utf8')).toContain(
-    'https://github.com/anninameyer/DataSieve',
-  );
+  const citation = await readFile((await (await promise).path())!, 'utf8');
+  expect(citation).toContain('Annina R. Meyer. DataSieve');
+  expect(citation).toContain('https://github.com/anninameyer/DataSieve');
 });
 
 test('custom figure colors change the plot and reset to accessible defaults', async ({ page }) => {

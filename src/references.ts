@@ -1,7 +1,8 @@
 export const SOFTWARE = {
   name: 'DataSieve',
   version: '1.0.0',
-  author: 'anninameyer',
+  author: 'Annina R. Meyer',
+  orcid: 'https://orcid.org/0009-0006-3110-6598',
   handle: '@anninameyer',
   repository: 'https://github.com/anninameyer/DataSieve',
   profile: 'https://github.com/anninameyer',
