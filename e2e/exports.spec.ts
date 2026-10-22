@@ -50,6 +50,12 @@ test('TSV and Excel exports preserve all records, original values, methods and c
   expect((await readSheet(complete, 'Methods and citations')).flat().join(' ')).toContain(
     'https://orcid.org/0009-0006-3110-6598',
   );
+  expect((await readSheet(complete, 'Methods and citations')).flat().join(' ')).toContain(
+    'GPT-6.1-Sol (high reasoning setting)',
+  );
+  expect((await readSheet(complete, 'Methods and citations')).flat().join(' ')).toContain(
+    'does not upload it to external servers',
+  );
   expect(
     await readSheet(await tabularDownload(page, 'xlsx', 'Observations to review'), 'Observations'),
   ).toHaveLength(7);
@@ -67,6 +73,13 @@ test('introductory method examples, creator credit and citation are visible with
   await expect(page.locator('.brand')).toHaveText('RangeSieve');
   await expect(page.locator('.brand svg')).toHaveCount(1);
   await expect(page.locator('.brand-sub')).toHaveCount(0);
+  await expect(page.locator('.processing-pill')).toHaveText('Runs in your browser');
+  await expect(page.locator('body')).not.toContainText('Private by design');
+  await expect(page.locator('.privacy-notice')).toContainText(
+    'does not upload it to external servers',
+  );
+  await expect(page.locator('.privacy-notice')).toContainText('share it with third parties');
+  await expect(page.locator('.privacy-notice')).toContainText('save your analysis automatically');
   await expect(page.locator('.privacy-notice')).not.toContainText(/client/i);
   await page
     .locator('#methods details')
@@ -78,6 +91,12 @@ test('introductory method examples, creator credit and citation are visible with
   await expect(method).toContainText('4.7215');
   await expect(page.locator('.page-footer')).toContainText('@anninameyer');
   await expect(page.locator('.page-footer')).toContainText('Annina R. Meyer');
+  await expect(page.locator('#citation .development-acknowledgement')).toContainText(
+    'GPT-6.1-Sol (high reasoning setting)',
+  );
+  await expect(page.locator('#citation .development-acknowledgement')).toContainText(
+    'Dataset analysis is performed by the local application code',
+  );
   await expect(page.locator('#citation').getByRole('link', { name: 'ORCID:' })).toHaveAttribute(
     'href',
     'https://orcid.org/0009-0006-3110-6598',

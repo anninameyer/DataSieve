@@ -30,7 +30,15 @@ import {
 } from './exports';
 import { Charts } from './Charts';
 import { workbook } from './workbook';
-import { methods, methodText, references, SOFTWARE, softwareCitation } from './references';
+import {
+  methods,
+  methodText,
+  references,
+  SOFTWARE,
+  softwareCitation,
+  dataHandlingNotice,
+  developmentAcknowledgement,
+} from './references';
 
 function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const paths: Record<string, ReactNode> = {
@@ -70,6 +78,12 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
       <>
         <path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z" />
         <path d="m8 12 3 3 5-6" />
+      </>
+    ),
+    browser: (
+      <>
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M3 9h18M6 6.5h.01m3 0h.01" />
       </>
     ),
     arrow: <path d="M4 12h16m-6-6 6 6-6 6" />,
@@ -259,7 +273,7 @@ export default function App() {
     setFlagged(false);
     setSort('source');
     setPage(0);
-    setNotice('Session cleared. No data is stored by RangeSieve.');
+    setNotice('Session cleared. This analysis was held only in browser memory.');
   }
   function exportFile(kind: string) {
     if (!canExport) return;
@@ -287,6 +301,8 @@ export default function App() {
               ['Topic', 'Explanation or citation'],
               ['Software', softwareCitation()],
               ['Creator ORCID', SOFTWARE.orcid],
+              ['Data handling', dataHandlingNotice],
+              ['Development acknowledgement', developmentAcknowledgement],
               ...methodText.map(([title, text]) => [title, text]),
               ...references.map((reference) => [reference.title, reference.url]),
             ],
@@ -344,12 +360,12 @@ export default function App() {
         </nav>
         <div className="sidebar-bottom">
           <div className="local-card">
-            <Icon name="shield" size={24} />
-            <strong>Research stays with you.</strong>
+            <Icon name="browser" size={24} />
+            <strong>Analyze in your browser.</strong>
             <p>
-              No uploads. No accounts.
+              No data upload or sharing.
               <br />
-              Just your data, in your browser.
+              No automatic saving.
             </p>
             <span className="status-dot">{offline ? 'Offline edition' : 'Local processing'}</span>
           </div>
@@ -373,8 +389,8 @@ export default function App() {
             Workspace <span>/</span> <strong>Dataset explorer</strong>
           </span>
           <div className="topbar-right">
-            <span className="private-pill">
-              <Icon name="shield" size={15} /> Private by design
+            <span className="processing-pill">
+              <Icon name="browser" size={15} /> Runs in your browser
             </span>
             <a href="#methods" aria-label="Read methods and help">
               <Icon name="help" />
@@ -395,11 +411,8 @@ export default function App() {
             </button>
           </div>
           <div className="privacy-notice">
-            <Icon name="shield" size={19} />
-            <p>
-              Your data stays in your browser. All analyses run locally. No research data is
-              uploaded or stored.
-            </p>
+            <Icon name="browser" size={19} />
+            <p>{dataHandlingNotice}</p>
           </div>
           <div className="sr-only" role="status" aria-live="polite">
             {notice}
@@ -1135,6 +1148,7 @@ export default function App() {
                 ORCID: 0009-0006-3110-6598
               </a>
             </p>
+            <p className="fine-print development-acknowledgement">{developmentAcknowledgement}</p>
             <blockquote className="software-citation">{softwareCitation()}</blockquote>
             <p>
               <a href={`https://doi.org/${SOFTWARE.doi}`} target="_blank" rel="noreferrer">

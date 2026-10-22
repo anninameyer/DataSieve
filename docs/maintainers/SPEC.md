@@ -2,7 +2,7 @@ RangeSieve — Application Specification
 
 1. Project overview
 
-RangeSieve is a privacy-first, browser-based application for exploring numerical datasets, identifying statistical outliers, and evaluating potentially implausible observations.
+RangeSieve is a browser-based application for exploring numerical datasets, identifying statistical outliers, and evaluating potentially implausible observations.
 
 It is designed primarily for scientific researchers working with experimental, observational, and citizen-science datasets.
 
@@ -10,7 +10,7 @@ The application must be accessible to users without programming knowledge.
 
 Core principles
 
-1. Privacy by design: all data processing occurs locally in the browser.
+1. Local processing: datasets are processed in the browser without uploads to external servers, external sharing, or automatic saving.
 2. No installation required for online usage.
 3. Fully functional offline version distributed as a single HTML file.
 4. Transparent and reproducible statistical methods.
@@ -350,7 +350,7 @@ Refreshing or closing the application must clear the entered data.
 
 The online application must provide a privacy notice:
 
-“Your data stays in your browser. All analyses run locally. No research data is uploaded or stored.”
+“Pasted data is processed locally in your browser. RangeSieve does not upload it to external servers, share it with third parties, or save your analysis automatically.”
 
 The offline application must work without any network connection.
 

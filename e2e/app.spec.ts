@@ -95,6 +95,10 @@ test('all four exports download valid local artifacts', async ({ page }) => {
       expect(content).toContain('RangeSieve: numerical data exploration and outlier review');
       expect(content).not.toContain('privacy-first');
     }
+    if (name === 'Analysis report') {
+      expect(content).toContain('GPT-6.1-Sol (high reasoning setting)');
+      expect(content).toContain('does not upload it to external servers');
+    }
   }
 });
 
@@ -264,6 +268,10 @@ test('standalone file works offline with CSP, identical results, all plots and l
   });
   await page.goto(pathToFileURL(resolve('offline/RangeSieve.html')).href);
   await ready(page);
+  await expect(page.locator('.processing-pill')).toHaveText('Runs in your browser');
+  await expect(page.locator('#citation .development-acknowledgement')).toContainText(
+    'GPT-6.1-Sol (high reasoning setting)',
+  );
   await example(page);
   await expect(page.getByTestId('review-count')).toHaveText('6');
   await page.getByRole('button', { name: 'Boxplot', exact: true }).click();

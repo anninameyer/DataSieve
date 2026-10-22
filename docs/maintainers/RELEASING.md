@@ -6,7 +6,7 @@ Maintainer reference. Researchers should use the [citation guide](../../CITING.m
 
 Keep `CITATION.cff` and `src/references.ts` consistent: title, version, release date, author, ORCID and version-specific DOI. Keep the citation in the user README and citation guide consistent with them. The shared citation is used by the interface, downloaded citation, summary exports, reports, Excel citation sheets and separate figure captions. Figures themselves remain unbranded.
 
-The software title is **RangeSieve: numerical data exploration and outlier review**. Explain privacy in the description: analysis runs locally in the researcher’s browser, and RangeSieve does not upload research data or automatically save analyses.
+The software title is **RangeSieve: numerical data exploration and outlier review**. Explain data handling in the description: pasted data is processed locally in temporary browser memory, with no dataset upload to external servers, external sharing, or automatic saving. Downloaded results are saved only when the researcher chooses to export them. Preserve the development acknowledgement for GPT-6.1-Sol (high reasoning setting); human authorship and software citations remain separate from that acknowledgement.
 
 The confirmed author is **Annina R. Meyer**, ORCID `https://orcid.org/0009-0006-3110-6598`. The v1.0.0 release date is **2026-10-21** and its DOI is **10.5281/zenodo.23540904**. The concept DOI **10.5281/zenodo.23540903** covers all versions; use the version DOI when identifying software used for an analysis.
 

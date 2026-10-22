@@ -16,6 +16,12 @@ export const SOFTWARE = {
 export const softwareCitation = () =>
   `${SOFTWARE.citationAuthor} (${SOFTWARE.releaseDate.slice(0, 4)}). ${SOFTWARE.title} (Version ${SOFTWARE.version}) [Computer software]. ${SOFTWARE.doi ? `Zenodo. https://doi.org/${SOFTWARE.doi}` : SOFTWARE.repository}`;
 
+export const dataHandlingNotice =
+  'Pasted data is processed locally in your browser. RangeSieve does not upload it to external servers, share it with third parties, or save your analysis automatically.';
+
+export const developmentAcknowledgement =
+  'Software development was assisted by the large language model GPT-6.1-Sol (high reasoning setting). Dataset analysis is performed by the local application code.';
+
 export const references = [
   {
     id: 'quantiles',

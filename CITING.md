@@ -40,6 +40,10 @@ Adapt this example to your actual settings and analysis:
 
 Add the actual expected bounds and any justified exclusions if applicable.
 
+## Development acknowledgement
+
+Software development was assisted by the large language model **GPT-6.1-Sol (high reasoning setting)**. Dataset analysis is performed by the local application code. The software citation credits Annina R. Meyer as the author.
+
 ## Figure acknowledgements
 
 Figures use [Plotly.js v3.7.0](https://github.com/plotly/plotly.js/tree/v3.7.0). The default palette is adapted from Okabe and Ito’s [Color Universal Design](https://jfly.uni-koeln.de/color/), with symbols and line patterns supplementing color. Acknowledge these if your journal requires it. Custom colors should be checked for distinguishability in the final figure.

@@ -115,9 +115,13 @@ Choose PNG, TIFF, PDF or SVG, print size and resolution (300 or 600 DPI for rast
 
 Exported figures show **all valid observations**, even when sensitivity exclusions are selected. Export resets zoom to show the full dataset and uses your selected reference lines, colors and horizontal grid setting. The figure and its embedded metadata have no software branding. **Download figure caption** provides thresholds, settings, methods and the software citation separately.
 
-## Privacy and practical limitations
+## Local processing and practical limitations
 
-RangeSieve processes data in your browser and does not upload it or automatically save your analysis. **Download results before reloading or closing the application.** The offline HTML file is a reusable application, not a saved dataset or session. Browser and operating-system features such as clipboard history, downloaded files and session restoration remain subject to their own settings.
+Opening the online version downloads the application code to your browser. Pasting data places it in temporary browser memory; calculations, figures and export-file creation then run on your device. RangeSieve does not upload your dataset to external servers, share it with third parties, or save the analysis automatically. The offline HTML contains the same application code and works without an internet connection.
+
+Files are saved to your device only when you choose to download them. **Download results before reloading or closing the application.** The offline HTML file is a reusable application, not a saved dataset or session. Browser and operating-system features such as clipboard history, downloaded files and session restoration remain subject to their own settings.
+
+Software development was assisted by **GPT-6.1-Sol (high reasoning setting)**, a large language model. When you analyze a dataset, the local application code applies the formulas described in this guide.
 
 Calculations use standard numerical precision of approximately 15–17 significant digits. Long numbers receive precision warnings; their original text remains available. Unavailable calculations or checks are reported as unavailable rather than treated as negative results. Rescale units if the application explains that a numerical range cannot be plotted or calculated reliably. Displayed summaries are rounded for readability; numerical text exports retain the available calculation precision.
 

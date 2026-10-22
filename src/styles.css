@@ -284,7 +284,7 @@ nav small {
   color: #78866c;
   display: flex;
 }
-.private-pill {
+.processing-pill {
   display: flex;
   gap: 7px;
   align-items: center;
@@ -1785,7 +1785,7 @@ tbody th {
   .topbar-right {
     gap: 17px;
   }
-  .private-pill {
+  .processing-pill {
     font-size: 10px;
   }
   .breadcrumb {

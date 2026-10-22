@@ -131,7 +131,7 @@ CSV uses RFC 4180 quoting, CRLF, UTF-8 BOM, and spreadsheet formula protection. 
 
 These complementary exploratory rules are not formal hypothesis tests or a validated error classifier. No p-values, confidence intervals, false-discovery control, normality claim, confirmed-error category, or automatic cleaning advice is supplied. Flags depend on sample size, cutoffs, precision, distribution shape, dependence, and domain assumptions. Skewed, bounded, multimodal, discrete, dependent, very small, or contaminated samples may yield misleading flags or miss errors. Correlated methods can mask outliers or flag valid subpopulations. Choosing cutoffs after seeing results can bias inference.
 
-Review records, units, instruments, study design, and context. Save an independent audit of justified corrections. RangeSieve keeps no persistent session; refresh/clear resets memory. Downloads deliberately save information locally. Browser/OS clipboard, caches, extensions, and session restoration are outside application control.
+Review records, units, instruments, study design, and context. Save an independent audit of justified corrections. RangeSieve processes pasted data in temporary browser memory without dataset upload to external servers, external sharing, or automatic analysis saving; refresh/clear resets memory. Downloads deliberately save information locally. Browser/OS clipboard, caches, extensions, and session restoration are outside application control.
 
 ## References
 

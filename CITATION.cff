@@ -13,7 +13,7 @@ authors:
 repository-code: 'https://github.com/anninameyer/RangeSieve'
 url: 'https://github.com/anninameyer/RangeSieve'
 license: MIT
-abstract: 'Browser-based numerical data exploration, outlier screening, plausibility assessment, sensitivity analysis, and local scientific exports. Research data stays in the user’s browser: all analyses run locally, with no research data uploaded or stored by RangeSieve. The online and self-contained offline editions share the same source.'
+abstract: 'Browser-based numerical data exploration, outlier screening, plausibility assessment, sensitivity analysis, and local scientific exports. Pasted data is processed locally in the user’s browser; RangeSieve does not upload datasets to external servers, share them with third parties, or save analyses automatically. Results are saved to the user’s device only when explicitly downloaded. The online and self-contained offline editions share the same source. Software development was assisted by the large language model GPT-6.1-Sol (high reasoning setting); dataset analysis is performed by the local application code.'
 keywords:
   - scientific software
   - exploratory data analysis

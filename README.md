@@ -18,9 +18,9 @@ RangeSieve helps explore numerical datasets, identify unusual observations, and 
 
 Select **Download offline edition** in the application’s sidebar. Save `RangeSieve.html` and open it in your browser whenever you need it, including without an internet connection.
 
-## Privacy
+## Local processing and data handling
 
-Your data stays in your browser. RangeSieve does not upload it or save your analysis automatically. Reloading or closing the application clears the analysis, so download any results you want to keep.
+Paste your data and run the analysis in your browser. Your dataset is held temporarily in browser memory: RangeSieve does not upload it to external servers, share it with third parties, or save the analysis automatically. Results are saved to your device only when you choose to download them. Reloading or closing the application clears the analysis.
 
 ## Methods and citation
 
@@ -31,5 +31,7 @@ Created by **Annina R. Meyer** ([ORCID](https://orcid.org/0009-0006-3110-6598), 
 > Meyer, A. R. (2026). _RangeSieve: numerical data exploration and outlier review_ (Version 1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23540904
 
 See [citation guidance](CITING.md) or select **Cite this repository** on GitHub.
+
+Software development was assisted by the large language model **GPT-6.1-Sol (high reasoning setting)**. Dataset analysis is performed by the local application code.
 
 Free to use under the [MIT license](LICENSE).
