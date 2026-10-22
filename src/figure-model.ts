@@ -3,11 +3,12 @@ import { format } from './exports';
 import { softwareCitation } from './references';
 import {
   omittedReferenceLines,
-  plotScale,
+  figureScale,
   scaleDescription,
   violinBandwidth,
   type PlotScale,
 } from './plot-scale';
+import { processingDescription } from './processing';
 
 export const defaultPalette = {
   normal: '#0072B2',
@@ -22,6 +23,8 @@ export type FigureFormat = 'png' | 'tiff' | 'pdf' | 'svg';
 export interface FigureOptions {
   kind: 'histogram' | 'box' | 'sorted' | 'violin';
   scale: PlotScale;
+  scope?: 'figure' | 'analysis';
+  pseudocount?: number;
   smoothing: number;
   label: string;
   bins: number;
@@ -37,15 +40,19 @@ export interface FigureOptions {
 }
 /** Neutral image metadata; credit is provided separately in the downloadable caption. */
 export function figureDescription(analysis: Analysis, options: FigureOptions): string {
-  const view = plotScale(analysis, options.scale);
+  const pseudocount = analysis.processing?.pseudocount ?? options.pseudocount ?? 0;
+  const upfront = analysis.processing?.scope === 'analysis' && options.scale !== 'none';
+  const view = figureScale(analysis, options.scale, pseudocount);
   const density =
     options.kind === 'violin' ? violinBandwidth(view.values, options.smoothing) : null;
-  const omitted = omittedReferenceLines(analysis, options.scale, options);
+  const omitted = omittedReferenceLines(analysis, options.scale, options, pseudocount);
   return [
     `${options.kind === 'box' ? 'Boxplot' : options.kind === 'sorted' ? 'Sorted observations' : options.kind === 'violin' ? 'Violin plot' : 'Histogram'} of ${options.label}.`,
     `All ${analysis.summary.n} valid numerical observations; missing and invalid rows are absent from the figure. No sensitivity exclusions are applied to figures.`,
-    scaleDescription(analysis, options.scale),
-    'Scaling affects figures only. Screening flags, summaries, sensitivity results and entered bounds use the original data and units. The value axis is horizontal for histograms and vertical for other plots. Reference lines and box summaries are transformed original statistics, not statistics recalculated on transformed data. Reference-line legend values use original units.',
+    analysis.processing
+      ? processingDescription(analysis)
+      : scaleDescription(analysis, options.scale, pseudocount),
+    `${upfront ? 'Statistics, IQR/modified-Z screening and reference summaries use analyzed transformed values. Expected-bound legend values use original units; other reference-line legend values use the analysis scale.' : 'Scaling affects figures only. Screening flags, summaries and sensitivity results use original data and units. Reference lines and box summaries are transformed original statistics, not statistics recalculated on transformed data. Reference-line legend values use original units.'} The value axis is horizontal for histograms and vertical for other plots.`,
     view.error,
     omitted.length
       ? `Reference lines omitted because they cannot be represented on this scale: ${omitted.join(', ')}.`
@@ -57,12 +64,12 @@ export function figureDescription(analysis: Analysis, options: FigureOptions): s
     `Quantiles: Hyndman–Fan type 7. Median ${format(analysis.summary.median)}; mean ${format(analysis.summary.mean)}; raw MAD ${format(analysis.summary.mad)}.`,
     `IQR fences: multiplier ${analysis.settings.mild}, [${format(analysis.mildLow)}, ${format(analysis.mildHigh)}]; extreme multiplier ${analysis.settings.extreme}, [${format(analysis.extremeLow)}, ${format(analysis.extremeHigh)}]. Values strictly outside are flagged.`,
     `Modified Z = 0.6745 × (value − median) / MAD; flag |M| > ${analysis.settings.z}. ${analysis.summary.mad === 0 ? 'MAD = 0: this method is unavailable.' : ''}`,
-    `Expected bounds (inclusive): minimum ${analysis.settings.min === null ? 'not specified' : format(analysis.settings.min)}, maximum ${analysis.settings.max === null ? 'not specified' : format(analysis.settings.max)}.`,
+    `Expected bounds (inclusive, original units): minimum ${analysis.settings.min === null ? 'not specified' : format(analysis.settings.min)}, maximum ${analysis.settings.max === null ? 'not specified' : format(analysis.settings.max)}.`,
     `Visible lines: ${options.showMedian ? 'median; ' : ''}${options.showMean ? 'mean; ' : ''}${options.showRange ? 'specified expected bounds; ' : ''}${options.showIqr ? 'IQR fences' : 'IQR fences hidden'}. Horizontal grid lines: ${options.showGrid ? 'shown' : 'hidden'}. ${options.kind === 'histogram' ? `${options.bins} equal-width bins; all valid values counted.` : 'Symbols: circle = no statistical flags; triangle = statistical outlier; square = extreme IQR outlier; diamond = outside expected range. Color/symbol shows highest review priority; multiple row flags may coexist.'}`,
     `Colors: ${Object.entries(options.palette)
       .map(([key, value]) => `${key} ${value}`)
       .join('; ')}.`,
-    `Full-precision analysis settings: ${JSON.stringify({ ...analysis.settings, displayScale: options.scale, zscoreMean: options.scale === 'zscore' ? analysis.summary.mean : null, zscoreSampleSD: options.scale === 'zscore' ? analysis.summary.sd : null, violinSmoothing: density ? options.smoothing : null, violinBandwidth: density?.bandwidth ?? null, quantileType: 7, mildLower: analysis.mildLow, mildUpper: analysis.mildHigh, extremeLower: analysis.extremeLow, extremeUpper: analysis.extremeHigh, median: analysis.summary.median, mad: analysis.summary.mad })}.`,
+    `Full-precision analysis settings: ${JSON.stringify({ ...analysis.settings, displayScale: options.scale, transformationScope: analysis.processing?.scope ?? options.scope ?? 'figure', pseudocount, zscoreMean: options.scale === 'zscore' ? (analysis.processing?.originalSummary ?? analysis.summary).mean : null, zscoreSampleSD: options.scale === 'zscore' ? (analysis.processing?.originalSummary ?? analysis.summary).sd : null, violinSmoothing: density ? options.smoothing : null, violinBandwidth: density?.bandwidth ?? null, quantileType: 7, mildLower: analysis.mildLow, mildUpper: analysis.mildHigh, extremeLower: analysis.extremeLow, extremeUpper: analysis.extremeHigh, median: analysis.summary.median, mad: analysis.summary.mad })}.`,
     `Print size ${options.widthMm} × ${options.heightMm} mm; raster resolution ${options.dpi} DPI. PDF embeds a lossless raster; SVG is vector. Exports reset zoom to show the full dataset.`,
     'Screening flags do not establish errors or scientifically justify exclusion. Review source records and domain knowledge.',
     ...analysis.warnings,

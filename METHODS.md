@@ -86,23 +86,40 @@ The overall review label prioritizes missing or invalid observations, then value
 
 Use search, sorting and review-only filtering to inspect observations. The underlying dataset is retained. Selecting **Mean line**, **Median line**, **Expected bounds**, **IQR fences** or **Horizontal grid lines** changes the figure display. An expected-bound line requires a specified bound. The histogram’s bin control changes the display rather than the screening thresholds.
 
-### Display scale
+### Transformation and processing order
 
-Choose **Display scale** above the figure. **None (original values)** is the default. Scaling changes figures only: the review flags, summary tables, sensitivity calculations and data exports continue to use the original values and units. It does not rerun outlier screening on transformed data.
+**None (original values)** is the default. Choose **Transformation** and **Apply transformation to** above the figure:
 
-| Scale   | Meaning and example                                                                     | Requirement                                                                                                                                                |
-| ------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| None    | Original values and entered units.                                                      | Any valid numerical data.                                                                                                                                  |
-| Log10   | `log10(value)`: 1, 10 and 100 become 0, 1 and 2. This compresses large positive values. | Every valid observation must be positive. Zero or negative values block this view with an explanation; no observations are removed and no offset is added. |
-| Z-score | `(value − mean) / sample SD`: for 1, 2, 3, mean = 2 and sample SD = 1, giving −1, 0, 1. | At least two values and finite, positive sample SD. Constant datasets cannot use this scale.                                                               |
+| Scope                                  | Statistics and statistical flags                                                                                                                                                                  | Figure                                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Figures only (default)                 | Calculated from original values. Sensitivity comparisons stay in original units.                                                                                                                  | Observations, original summary lines and box summaries are mapped onto the selected scale. |
+| Analysis and figures (transform first) | All valid values are transformed first; summaries, type-7 quartiles, IQR/MAD and IQR/modified-Z flags are then calculated on those values. Sensitivity summaries use the same transformed values. | Shows the analyzed values and their calculated summaries, without a second transformation. |
 
-The z-score scale uses the **full original dataset** and sample SD with denominator `n − 1`; it is unitless and differs from the median/MAD-based **modified Z-score** used for screening. It does not make a distribution normal.
+Original identifiers and value text are retained in both modes. **Expected minimum and maximum always refer to original units and are checked against original values.** Their figure positions are transformed when possible; undefined positions are omitted with a notice, without disabling the original-unit plausibility assessment.
 
-Axis titles indicate the selected transformation: the numerical value is on the **y-axis** in boxplots, violins and sorted observations, and the **x-axis** in histograms. Histogram y-values remain observation counts. Logarithms apply to the numerical values in the entered units, so report those units.
+| Scale   | Definition and example                                                                          | Requirement                                        |
+| ------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| None    | Original values and units.                                                                      | Any valid numerical data.                          |
+| Log10   | `log10(x + c)`. Without a pseudocount, c = 0. With c = 1, values 0, 9 and 99 become 0, 1 and 2. | Every valid value plus c must be positive.         |
+| Z-score | `(x − mean) / sample SD`. For 1, 2, 3, mean = 2 and sample SD = 1, giving −1, 0, 1.             | At least two values and positive finite sample SD. |
 
-Reference lines, box quartiles and whiskers mark the transformed positions of the **original statistics**. For example, the log10 mean line marks `log10(original mean)`, rather than the mean of the logged values. Type-7 interpolated quartiles can also differ depending on the order of transformation and calculation; boxplots consistently transform the original quartiles. Reference-line legend values remain in original units. A nonpositive expected bound or fence cannot appear on a log10 figure; the application and caption explicitly list omitted lines.
+Enable **Add pseudocount** to enter a finite, nonnegative constant in the original units. It is added to **every value**, not only zeros. There is no universal appropriate “small” constant: choose it from measurement units and scientific context, report it and compare justified alternatives. It can strongly affect distances and flags near zero, does not repair erroneous values, and is not automatically a valid model for below-detection measurements. Invalid transformation settings block the selected figure or upfront analysis; no samples are silently dropped. See [NIST's discussion of transformations](https://www.itl.nist.gov/div898/handbook/ppc/section4/ppc47.htm).
 
-Histogram bins and violin density are calculated **on the displayed values**. Scaling can change apparent distribution shape and the number of visible peaks. Keep the matching caption with your figure to record the transformation and parameters. This display option does not export a new transformed dataset.
+Z-scores use the **full valid input dataset** and sample SD with denominator `n − 1`, following the centered convention described in [R's scaling reference](https://stat.ethz.ch/R-manual/R-devel/library/base/html/scale.html). They are unitless, differ from modified Z-scores used for screening, and do not make data normal. As a positive affine transformation, standardization usually leaves IQR/modified-Z decisions unchanged, apart from numerical rounding; log transformation can change them.
+
+**When to use each workflow:**
+
+- **Transform first** when relative differences or multiplicative variation are scientifically meaningful, such as a justified log transformation of right-skewed positive measurements. Your summaries and statistical screening then answer questions on the transformed scale. Transformation alone does not establish normality.
+- **Filter first, then transform** when source checks or predefined scientific rules justify removing records before fitting a transformation. Review original-scale results, choose exclusions, and save the complete annotated dataset and report. Under **Compare statistics**, expand **Filter first, then transform a second analysis** and download retained original values. Paste those two columns into a new analysis and choose **Analysis and figures**. This refits parameters to the retained input; report both passes and their rationale. The retained-values file deliberately contains only two original-value columns; its audit is the first report and annotated dataset (also included as settings in Excel).
+- **Figures only** when you want a clearer view while retaining measured-unit summaries and screening. Sensitivity exclusions remain a comparison, rather than an automatic cleaning or refitting operation.
+
+In either scope, sensitivity exclusions keep fitted transformation parameters and screening thresholds fixed to the **full input dataset for that analysis**. In particular, retained z-scores are not centered or standardized again. Use the separate filter-first workflow when you intentionally want to fit parameters after exclusions.
+
+Axis titles state the transformation, including the actual pseudocount: values lie on the **y-axis** in boxplots, violins and sorted observations, and the **x-axis** in histograms. Histogram y-values remain counts. Logarithms use the numerical values in the entered units; report those units. Mean/median cards, statistical tables and sensitivity comparisons identify the analysis scale.
+
+**Example of why scope matters:** for 0, 9, 99 and c = 1, transform-first gives a mean of 1 on the log10 scale. Figures-only retains the original mean of 36 and draws its line at `log10(36 + 1) ≈ 1.5682`. Interpolated type-7 quartiles can also differ depending on whether they are calculated before or after a nonlinear transformation. In transform-first mode, boxplots use quartiles calculated after transformation; in figures-only mode, they map the original quartiles. Legends distinguish analyzed-scale summaries from original-unit references.
+
+Histogram bins and violin density use displayed values in both scopes. Scaling can change apparent modality. Captions, reports and spreadsheet settings record the scope, formula, constant and fitted mean/SD; annotated exports preserve parsed original and analysis values separately.
 
 ### Violin plots
 
@@ -118,7 +135,7 @@ The density is `f(t) = Σ exp(−0.5((t − xᵢ)/h)²) / (n h √(2π))`. Width
 
 Select one or more criteria to compare summaries for all valid observations with summaries after temporarily excluding matching observations. Criteria combine with **OR**: an observation meeting any selected rule is excluded once, even if it meets several rules. Missing and invalid observations are already outside the numerical calculations.
 
-Flags and thresholds stay fixed to the full dataset. Only the retained-data summaries are recalculated. The displayed changes are **retained summary minus full-data summary**. The percentage excluded uses all valid observations as its denominator. If every valid observation is excluded, retained numerical summaries and changes are unavailable.
+Flags, thresholds and fitted transformation parameters stay fixed to the full dataset on the selected analysis scale. Only the retained-data summaries are recalculated; transformations are not refitted. The displayed changes are **retained summary minus full-data summary**. The percentage excluded uses all valid observations as its denominator. If every valid observation is excluded, retained numerical summaries and changes are unavailable.
 
 **Example:** for `1, 2, 3, 4, 10`, setting an expected maximum of 5 and selecting **Outside expected range** temporarily excludes 10. One of five valid values (20%) is excluded. The mean changes from 4 to 2.5, a change of −1.5; the median changes from 3 to 2.5, a change of −0.5.
 
@@ -130,7 +147,7 @@ Choose **CSV**, **TSV** or **Excel** under **Data export format**:
 
 | Export                 | Contents                                                                                                                                          |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Complete dataset       | All original rows, values, flags, review labels and sensitivity-exclusion indicators.                                                             |
+| Complete dataset       | All original rows and parsed values, analysis values, transformation scope/parameters, flags, review labels and sensitivity-exclusion indicators. |
 | Observations to review | Rows requiring review, including missing and invalid values.                                                                                      |
 | Statistical summary    | Summary statistics, thresholds, expected bounds, sensitivity comparisons, warnings and the software citation.                                     |
 | Analysis report        | A printable HTML report with summaries, settings, worked methods and citations. It does not save an editable analysis session or the raw dataset. |

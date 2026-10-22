@@ -31,6 +31,13 @@ import {
 import { Charts } from './Charts';
 import { workbook } from './workbook';
 import {
+  defaultProcessingInput,
+  processingSettings,
+  type ProcessingInput,
+} from './processing-types';
+import { processAnalysis, processingRows } from './processing';
+import { scaleAxisLabel } from './plot-scale';
+import {
   methods,
   methodText,
   references,
@@ -170,6 +177,8 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [tableFormat, setTableFormat] = useState<'csv' | 'tsv' | 'xlsx'>('csv');
   const [exportError, setExportError] = useState('');
+  const [processingInput, setProcessingInput] = useState<ProcessingInput>(defaultProcessingInput);
+  const processing = useMemo(() => processingSettings(processingInput), [processingInput]);
   const preview = useMemo(() => parseData(source, options), [source, options]);
   const dirty =
     source !== appliedSource || JSON.stringify(options) !== JSON.stringify(appliedOptions);
@@ -196,8 +205,11 @@ export default function App() {
     }
   }, [bounds, thresholds]);
   const analysis = useMemo(
-    () => (validation.error ? EMPTY_ANALYSIS : analyze(parsed.rows, validation.settings)),
-    [parsed, validation],
+    () =>
+      validation.error
+        ? EMPTY_ANALYSIS
+        : processAnalysis(parsed.rows, validation.settings, processing),
+    [parsed, validation, processing],
   );
   const comparison = useMemo(() => sensitivity(analysis, criteria), [analysis, criteria]);
   const filtered = useMemo(() => {
@@ -224,12 +236,17 @@ export default function App() {
   const reviewCount = analysis.rows.filter((row) => row.priority !== 'No statistical flags').length;
   const missing = parsed.rows.filter((row) => row.status === 'missing').length;
   const invalid = parsed.rows.filter((row) => row.status === 'invalid').length;
-  const canExport = parsed.rows.length > 0 && !validation.error && !dirty;
+  const processingError = processing.scope === 'analysis' ? analysis.processing?.error : '';
+  const canExport = parsed.rows.length > 0 && !validation.error && !processingError && !dirty;
+  const upfront = processing.scope === 'analysis' && processing.scale !== 'none';
   const variableLabel = variable.name
     ? variable.name + (variable.unit ? ` (${variable.unit})` : '')
     : variable.unit
       ? `Value (${variable.unit})`
       : 'Value';
+  const analysisLabel = upfront
+    ? scaleAxisLabel(variableLabel, processing.scale, processing.pseudocount)
+    : variableLabel;
 
   function applyDataset() {
     if (preview.error) return;
@@ -243,6 +260,7 @@ export default function App() {
     setNotice(`${preview.rows.length} rows analyzed locally.`);
   }
   function loadExample() {
+    setProcessingInput(defaultProcessingInput);
     setSource(exampleData);
     setAppliedSource(exampleData);
     setOptions(defaultParse);
@@ -260,6 +278,7 @@ export default function App() {
     );
   }
   function clearSession() {
+    setProcessingInput(defaultProcessingInput);
     setSource('');
     setAppliedSource('');
     setOptions(defaultParse);
@@ -291,7 +310,16 @@ export default function App() {
           ...summaryRows(analysis, parsed, variable, criteria),
         ];
         const rows =
-          kind === 'summary' ? summary : annotatedRows(analysis, criteria, kind === 'flagged');
+          kind === 'retained'
+            ? [
+                ['Sample_ID', 'Value'],
+                ...analysis.rows
+                  .filter((row) => row.status === 'valid' && !isExcluded(row, criteria))
+                  .map((row) => [row.originalId || row.id, row.original]),
+              ]
+            : kind === 'summary'
+              ? summary
+              : annotatedRows(analysis, criteria, kind === 'flagged');
         if (tableFormat === 'xlsx') {
           const sheets = [{ name: kind === 'summary' ? 'Summary' : 'Observations', rows }];
           if (kind !== 'summary') sheets.push({ name: 'Analysis settings', rows: summary });
@@ -303,6 +331,7 @@ export default function App() {
               ['Creator ORCID', SOFTWARE.orcid],
               ['Data handling', dataHandlingNotice],
               ['Development acknowledgement', developmentAcknowledgement],
+              ...processingRows(analysis),
               ...methodText.map(([title, text]) => [title, text]),
               ...references.map((reference) => [reference.title, reference.url]),
             ],
@@ -598,7 +627,8 @@ export default function App() {
                   </label>
                 </div>
                 <p className="fine-print">
-                  Use subject knowledge. Either boundary can be left blank.
+                  Enter bounds in original units, even when transforming before analysis. Either
+                  boundary can be left blank.
                 </p>
               </fieldset>
               {validation.error && (
@@ -626,12 +656,18 @@ export default function App() {
                 <div className="stat-card">
                   <span>Valid observations</span>
                   <strong data-testid="valid-count">
-                    {analysis.summary.n.toLocaleString('en')}
+                    {(analysis.processing?.originalSummary.n ?? analysis.summary.n).toLocaleString(
+                      'en',
+                    )}
                   </strong>
                   <small>of {parsed.rows.length.toLocaleString('en')} input rows</small>
                 </div>
                 <div className="stat-card">
-                  <span>Median{variable.unit ? ` (${variable.unit})` : ''}</span>
+                  <span>
+                    {upfront
+                      ? `Median · ${processing.scale === 'log10' ? 'log10 scale' : 'z-score (unitless)'}`
+                      : `Median${variable.unit ? ` (${variable.unit})` : ''}`}
+                  </span>
                   <strong>
                     {analysis.summary.median === null ? '—' : format(analysis.summary.median)}
                   </strong>
@@ -651,19 +687,36 @@ export default function App() {
                   title="See the distribution"
                   description={
                     parsed.rows.length
-                      ? `${variableLabel} · ${analysis.summary.n} valid observations`
+                      ? `${analysisLabel} · ${analysis.summary.n} valid observations`
                       : 'Patterns become clearer when you see the whole picture.'
                   }
                 >
                   <span className="label-chip">INTERACTIVE</span>
                 </SectionTitle>
-                <Charts analysis={analysis} label={variableLabel} canExport={canExport} />
+                <Charts
+                  analysis={analysis}
+                  label={variableLabel}
+                  canExport={canExport}
+                  processingInput={processingInput}
+                  onProcessingChange={setProcessingInput}
+                />
               </section>
               <section className="panel summary-panel">
                 <div className="compact-heading">
                   <h3>At a glance</h3>
                   <span>Sample statistics · Type 7 quantiles</span>
                 </div>
+                <p className="fine-print analysis-scale-note">
+                  Statistics and IQR/modified-Z screening: {analysisLabel}.{' '}
+                  {upfront ? 'Calculated after transformation.' : 'Original values and units.'}{' '}
+                  Expected-range checks always use original values.
+                </p>
+                {processingError && (
+                  <p className="message error" role="alert">
+                    {processingError} Statistics and exports are unavailable until transformation
+                    settings are valid.
+                  </p>
+                )}
                 <dl className="quick-stats">
                   {(['mean', 'sd', 'min', 'max', 'q1', 'q3', 'iqr'] as const).map((key) => (
                     <div key={key}>
@@ -734,6 +787,12 @@ export default function App() {
             >
               <span className="label-chip">{analysis.rows.length} ROWS</span>
             </SectionTitle>
+            {upfront && (
+              <p className="fine-print">
+                Analysis values and statistical flags use {analysisLabel}. Original values are
+                preserved; expected-range checks use original units.
+              </p>
+            )}
             <details className="threshold-settings">
               <summary>
                 Detection settings{' '}
@@ -840,6 +899,11 @@ export default function App() {
                       Sample ID <small>/ source row</small>
                     </th>
                     <th scope="col">Original value</th>
+                    {upfront && (
+                      <th scope="col">
+                        Analysis value <small>{analysisLabel}</small>
+                      </th>
+                    )}
                     <th scope="col">IQR class</th>
                     <th scope="col">
                       Modified Z <small>/ flag</small>
@@ -861,6 +925,7 @@ export default function App() {
                         <td className="numeric" title={row.issue || row.original}>
                           {row.original || <span className="muted">(empty)</span>}
                         </td>
+                        {upfront && <td className="numeric">{format(row.value)}</td>}
                         <td>
                           <span
                             className={`iqr-class ${row.extremeFlag ? 'extreme-text' : row.iqrFlag ? 'mild-text' : ''}`}
@@ -904,7 +969,9 @@ export default function App() {
                 <div className="table-empty">
                   {analysis.rows.length
                     ? 'No observations match your filters.'
-                    : 'Analyze a dataset to inspect individual observations.'}
+                    : processingError
+                      ? 'Transformation unavailable. Correct the settings to inspect results; your original pasted data is preserved.'
+                      : 'Analyze a dataset to inspect individual observations.'}
                 </div>
               )}
             </div>
@@ -939,6 +1006,31 @@ export default function App() {
               title="How much do flagged values matter?"
               description="Explore how summary statistics change when you temporarily exclude observations."
             />
+            <p className="fine-print">
+              Comparison scale: {analysisLabel}.{' '}
+              {upfront
+                ? 'Transformation parameters and screening thresholds stay fixed to the full input dataset; exclusions do not refit them.'
+                : 'Exclusions use original-scale screening. Figure scaling does not change this comparison.'}
+            </p>
+            <details className="filter-first-help">
+              <summary>Filter first, then transform a second analysis</summary>
+              <p className="fine-print">
+                Use original-scale screening to review records and choose scientifically justified
+                exclusions. Save the complete annotated dataset and analysis report as an audit,
+                then download the retained original values (two columns, without missing/invalid
+                rows). Paste those into a new analysis and choose “Analysis and figures” to fit
+                transformations to the retained dataset. This is a separate analysis; sensitivity
+                checkboxes alone do not refit parameters or establish that exclusions are justified.
+                The export uses your selected data format below.
+              </p>
+              <button
+                className="button small secondary"
+                disabled={!canExport || !comparison.summary.n}
+                onClick={() => exportFile('retained')}
+              >
+                Download retained original values
+              </button>
+            </details>
             <div className="sensitivity-grid">
               <div className="exclusion-options">
                 <h3>Explore exclusions</h3>

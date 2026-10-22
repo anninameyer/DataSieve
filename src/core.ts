@@ -14,6 +14,7 @@ export const defaultParse: ParseOptions = {
   valueColumn: 1,
 };
 export interface Observation {
+  rawValue?: number | null;
   row: number;
   id: string;
   originalId: string;
@@ -410,6 +411,7 @@ export interface Annotated extends Observation {
   priority: Priority;
 }
 export interface Analysis {
+  processing?: import('./processing-types').ProcessingRecord;
   rows: Annotated[];
   summary: Summary;
   settings: Settings;

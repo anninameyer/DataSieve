@@ -50,6 +50,12 @@ export const references = [
     use: 'Definition of MAD and normal-consistency scaling.',
   },
   {
+    id: 'transformations',
+    title: 'NIST/SEMATECH e-Handbook: Checking Assumptions; R base: Scaling and Centering.',
+    url: 'https://www.itl.nist.gov/div898/handbook/ppc/section4/ppc47.htm',
+    use: 'Scientific context for log transformation and adding a constant before taking logs. Standardization uses the centered sample SD convention documented at https://stat.ethz.ch/R-manual/R-devel/library/base/html/scale.html. Neither choice guarantees normality or justifies excluding data.',
+  },
+  {
     id: 'kde',
     title:
       'Silverman, B. W. (1986). Density Estimation for Statistics and Data Analysis. Chapman & Hall. p. 48, eq. 3.31.',
@@ -133,15 +139,15 @@ export const methods = [
       'This shows how much selected observations affect your conclusions; it does not scientifically justify removing them. Missing/invalid values are never in the numerical denominator. If every valid value is excluded, retained summaries are unavailable.',
   },
   {
-    title: 'Figure scaling',
+    title: 'Transformations, pseudocounts and processing order',
     explanation:
-      'Display scale changes the value axis and figure shape without changing the original data, screening flags, tables or sensitivity analysis. None keeps the entered units. Log10 compresses large positive values. Standard z-scores express distances from the full-data mean in sample standard deviations.',
+      'Choose a scale and where to apply it. Figures only keeps statistics and screening in original units. Analysis and figures transforms all valid values first, then recalculates summaries, quartiles, IQR/MAD and IQR/modified-Z flags on that scale. Original text is preserved, and expected bounds are always entered and checked in original units.',
     formula:
-      'Log10: t = log10(value). Standard z-score: t = (value − mean) / sample SD, with the n − 1 SD denominator.',
+      'Log10: t = log10(value + c), with optional nonnegative pseudocount c (default 0). Standard z-score: t = (value − full-data mean) / full-data sample SD, with the n − 1 SD denominator.',
     example:
-      'Log10 maps 1, 10 and 100 to 0, 1 and 2. For 1, 2, 3, mean = 2 and sample SD = 1, so displayed z-scores are −1, 0 and 1.',
+      'For 0, 9, 99 with pseudocount c = 1, log10(x + 1) gives 0, 1, 2. Transforming first gives mean 1; figures only places the original mean line at log10(36 + 1) ≈ 1.5682. For 1, 2, 3, mean = 2 and sample SD = 1, so z-scores are −1, 0, 1.',
     detail:
-      'The value axis is y in boxplots, violins and sorted observations, and x in histograms (whose y-axis still counts observations). Log10 requires every valid value to be positive; no rows are silently removed and no offset is added. Z-score scaling needs at least two values and positive finite SD; it differs from the robust modified Z-score used for screening. Reference lines, box quartiles and whiskers are transformed from their original-unit values, not recalculated after transformation. Nonpositive log reference lines are omitted with a notice. Logarithms use the numerical values in the entered units, so specify those units. Histogram bins and violin density are calculated on the displayed scale; scaling can change apparent modality.',
+      'The pseudocount is added to every value, not only zeros, and has the original units. Choose it scientifically, report it and compare justified alternatives: it can strongly change near-zero distances and flags and does not fix errors or represent censored measurements automatically. Every x + c must be positive; undefined transformations block the selected view or analysis without dropping samples. Z-scores require at least two values and positive finite SD, differ from modified Z screening scores, and do not change distribution shape or usually these screening decisions. Transform first when proportional differences or multiplicative variation are meaningful; use figures only for readability with original-scale inference. Filter first only with justified criteria: save the original-scale audit, download retained original values, and paste them into a separate analysis to fit transformations there. Sensitivity exclusions alone keep transformation parameters and thresholds fixed to the full dataset. Figure-only lines and box summaries transform original statistics; upfront mode calculates them after transformation. Value axes identify log10(x + c) or unitless z-scores (y for point/distribution plots, x for histograms). Unrepresentable bounds are omitted with a notice; plausibility still uses original values. Histogram bins and violin density use the displayed values. Scaling can change apparent modality and does not guarantee normality.',
   },
   {
     title: 'Violin plots and smoothing',

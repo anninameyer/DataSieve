@@ -18,7 +18,7 @@ In your methods or supplementary material, record:
 - The quartile convention (**Hyndman–Fan type 7**) and actual IQR multipliers or modified Z-score threshold used.
 - Any expected minimum or maximum, with its scientific basis.
 - The sensitivity criteria selected and any exclusions actually made, with their rationale.
-- Any figure transformation (none, log10 or full-data mean/sample-SD z-score), entered units, and violin bandwidth/smoothing if used. Figure scaling does not change screening thresholds or data exports.
+- Any transformation (none, log10 or full-data mean/sample-SD z-score), its scope (figures only or before analysis), exact pseudocount, entered units, and violin bandwidth/smoothing. State whether screening preceded transformation or used transformed data; if filtering first, document both passes and the exclusion rationale. Retain the fitted mean/SD for z-scores.
 
 **Download figure caption** records the figure settings, thresholds, method references and software citation. The analysis report and Excel citation sheets also retain citation information. Include captions, reports and annotated results in supplementary material where sharing is appropriate.
 
@@ -41,6 +41,8 @@ Adapt this example to your actual settings and analysis:
 > Numerical observations were explored in RangeSieve v1.0.0. Quartiles used Hyndman–Fan type 7. Values outside Q1 − 1.5×IQR or Q3 + 1.5×IQR were flagged for review; extreme fences used 3×IQR. Modified Z-scores used 0.6745(x−median)/MAD and |M| > 3.5. Expected bounds were specified independently. Flags were treated as prompts for review, not evidence of error.
 
 Add the actual expected bounds and any justified exclusions if applicable.
+
+For transformed analyses, also state, for example: “All valid values were transformed as log10(x + 0.01), with 0.01 expressed in the original measurement units, before calculating summaries and statistical screening flags. Expected-range checks used original values. Sensitivity exclusions used fixed full-data thresholds and transformation parameters.” For figures only, explicitly say that statistics and screening used original data. A filter-first workflow should report the original-scale rules, removed records and a second analysis fitted to retained original values. The downloadable report and captions record the selected order and parameters; the two-column retained-values download is an input for the second analysis, so keep the first report and annotated dataset as its audit.
 
 ## Development acknowledgement
 

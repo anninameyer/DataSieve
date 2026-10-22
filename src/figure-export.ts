@@ -6,7 +6,7 @@ import { imagePdf, pngMetadata, tiff } from './figure-formats';
 
 export { defaultPalette, figureCaption, type Palette, type FigureFormat } from './figure-model';
 import { figureDescription, type FigureOptions, type FigureFormat } from './figure-model';
-import { plotScale } from './plot-scale';
+import { figureScale } from './plot-scale';
 
 function dataUrlText(url: string): string {
   const comma = url.indexOf(',');
@@ -49,7 +49,7 @@ export async function exportFigure(
 ) {
   if (!analysis.summary.n)
     throw new Error('Analyze numerical observations before exporting a figure.');
-  const scaleError = plotScale(analysis, options.scale).error;
+  const scaleError = figureScale(analysis, options.scale, options.pseudocount ?? 0).error;
   if (scaleError) throw new Error(scaleError);
   const pixelWidth = Math.round((options.widthMm / 25.4) * options.dpi),
     pixelHeight = Math.round((options.heightMm / 25.4) * options.dpi);

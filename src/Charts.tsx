@@ -12,11 +12,13 @@ import {
 } from './figure-export';
 import {
   omittedReferenceLines,
-  plotScale,
+  figureScale,
   scaleAxisLabel,
   violinBandwidth,
   type PlotScale,
 } from './plot-scale';
+import { processingSettings, type ProcessingInput } from './processing-types';
+import { processingDescription } from './processing';
 
 const markerSymbols: Record<Priority, 'circle' | 'triangle-up' | 'square' | 'diamond'> = {
   'No statistical flags': 'circle',
@@ -53,14 +55,19 @@ export function Charts({
   analysis,
   label,
   canExport = true,
+  processingInput,
+  onProcessingChange,
 }: {
   analysis: Analysis;
   label: string;
   canExport?: boolean;
+  processingInput: ProcessingInput;
+  onProcessingChange: (value: ProcessingInput) => void;
 }) {
   const [kind, setKind] = useState<ChartKind>('histogram');
   const [bins, setBins] = useState(18);
-  const [scale, setScale] = useState<PlotScale>('none');
+  const { scale, scope, pseudocount } = processingSettings(processingInput);
+  const upfront = scope === 'analysis' && scale !== 'none';
   const [smoothing, setSmoothing] = useState(1);
   const [showMean, setShowMean] = useState(false);
   const [showMedian, setShowMedian] = useState(true);
@@ -88,6 +95,8 @@ export function Charts({
     label,
     bins,
     scale,
+    scope,
+    pseudocount,
     smoothing,
     showMean,
     showMedian,
@@ -101,14 +110,22 @@ export function Charts({
   };
   const element = useRef<HTMLDivElement>(null);
   const valid = useMemo(() => analysis.rows.filter((row) => row.status === 'valid'), [analysis]);
-  const view = useMemo(() => plotScale(analysis, scale), [analysis, scale]);
+  const view = useMemo(
+    () => figureScale(analysis, scale, pseudocount),
+    [analysis, scale, pseudocount],
+  );
   const density = useMemo(() => violinBandwidth(view.values, smoothing), [view, smoothing]);
-  const omitted = omittedReferenceLines(analysis, scale, {
-    showRange,
-    showIqr,
-    showMean,
-    showMedian,
-  });
+  const omitted = omittedReferenceLines(
+    analysis,
+    scale,
+    {
+      showRange,
+      showIqr,
+      showMean,
+      showMedian,
+    },
+    pseudocount,
+  );
   const distribution = kind === 'box' || kind === 'violin';
   const chart = useMemo(() => {
     const { summary } = analysis;
@@ -123,7 +140,8 @@ export function Charts({
     ) => {
       value = view.transform(value);
       if (value === null) return;
-      if (scale !== 'none') name += ' (original units)';
+      if (scale !== 'none')
+        name += name.startsWith('Expected') || !upfront ? ' (original units)' : ' (analysis scale)';
       shapes.push(
         vertical
           ? {
@@ -150,13 +168,13 @@ export function Charts({
     };
     if (showRange) {
       line(
-        analysis.settings.min,
+        upfront ? (analysis.processing?.boundPositions.min ?? null) : analysis.settings.min,
         palette.outside,
         'dash',
         `Expected minimum = ${format(analysis.settings.min)}`,
       );
       line(
-        analysis.settings.max,
+        upfront ? (analysis.processing?.boundPositions.max ?? null) : analysis.settings.max,
         palette.outside,
         'dash',
         `Expected maximum = ${format(analysis.settings.max)}`,
@@ -203,7 +221,7 @@ export function Charts({
             size: (high - low + padding * 2) / bins,
           },
           marker: { color: palette.normal, line: { color: '#ffffff', width: 1.5 } },
-          hovertemplate: `${escapeHtml(scaleAxisLabel(label, scale))}: %{x}<br>Observations: %{y}<extra></extra>`,
+          hovertemplate: `${escapeHtml(scaleAxisLabel(label, scale, pseudocount))}: %{x}<br>Observations: %{y}<extra></extra>`,
         },
       ];
     } else {
@@ -288,7 +306,9 @@ export function Charts({
           },
           hovertemplate:
             '%{customdata[0]}<br>Original value: %{customdata[1]}' +
-            (scale === 'none' ? '' : `<br>${escapeHtml(scaleAxisLabel(label, scale))}: %{y}`) +
+            (scale === 'none'
+              ? ''
+              : `<br>${escapeHtml(scaleAxisLabel(label, scale, pseudocount))}: %{y}`) +
             '<br>Source row: %{customdata[2]}<extra>' +
             escapeHtml(priority) +
             '</extra>',
@@ -305,7 +325,7 @@ export function Charts({
       xaxis: {
         title: {
           text: vertical
-            ? escapeHtml(scaleAxisLabel(label, scale))
+            ? escapeHtml(scaleAxisLabel(label, scale, pseudocount))
             : kind === 'sorted'
               ? 'Observation rank (ordered by value)'
               : '',
@@ -315,7 +335,9 @@ export function Charts({
         ...(distribution ? { showticklabels: false, range: [-0.45, 1] } : {}),
       },
       yaxis: {
-        title: { text: vertical ? 'Observations' : escapeHtml(scaleAxisLabel(label, scale)) },
+        title: {
+          text: vertical ? 'Observations' : escapeHtml(scaleAxisLabel(label, scale, pseudocount)),
+        },
         showgrid: showGrid,
         gridcolor: '#e5e7eb',
         zeroline: false,
@@ -324,7 +346,7 @@ export function Charts({
       shapes,
       hovermode: 'closest',
       dragmode: 'zoom',
-      uirevision: `${kind}-${scale}-${smoothing}-${analysis.rows.length}-${summary.min}-${summary.max}-${showRange}-${showIqr}`,
+      uirevision: `${kind}-${scale}-${scope}-${pseudocount}-${smoothing}-${analysis.rows.length}-${summary.min}-${summary.max}-${showRange}-${showIqr}`,
     };
     return { data, layout };
   }, [
@@ -344,6 +366,9 @@ export function Charts({
     smoothing,
     density,
     distribution,
+    upfront,
+    scope,
+    pseudocount,
   ]);
   const plottedMax = view.values.reduce((max, value) => Math.max(max, Math.abs(value)), 0);
   const unplottable =
@@ -460,17 +485,64 @@ export function Charts({
       </div>
       <div className="plot-display-controls">
         <label>
-          Display scale
+          Transformation
           <select
-            aria-label="Display scale"
+            aria-label="Transformation"
             value={scale}
-            onChange={(event) => setScale(event.target.value as PlotScale)}
+            onChange={(event) =>
+              onProcessingChange({ ...processingInput, scale: event.target.value as PlotScale })
+            }
           >
             <option value="none">None (original values)</option>
             <option value="log10">Log10</option>
             <option value="zscore">Z-score (mean / sample SD)</option>
           </select>
         </label>
+        <label>
+          Apply transformation to
+          <select
+            aria-label="Apply transformation to"
+            value={scope}
+            onChange={(event) =>
+              onProcessingChange({
+                ...processingInput,
+                scope: event.target.value as ProcessingInput['scope'],
+              })
+            }
+          >
+            <option value="figure">Figures only</option>
+            <option value="analysis">Analysis and figures (transform first)</option>
+          </select>
+        </label>
+        {scale === 'log10' && (
+          <div className="pseudocount-control">
+            <label>
+              <input
+                type="checkbox"
+                checked={processingInput.addPseudocount}
+                onChange={(event) =>
+                  onProcessingChange({ ...processingInput, addPseudocount: event.target.checked })
+                }
+              />{' '}
+              Add pseudocount
+            </label>
+            {processingInput.addPseudocount && (
+              <label>
+                Pseudocount (original units)
+                <input
+                  aria-label="Log10 pseudocount"
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={processingInput.pseudocount}
+                  onChange={(event) =>
+                    onProcessingChange({ ...processingInput, pseudocount: event.target.value })
+                  }
+                />
+              </label>
+            )}
+          </div>
+        )}
         {kind === 'violin' && (
           <label>
             Violin smoothing
@@ -488,15 +560,43 @@ export function Charts({
         )}
       </div>
       <p className="fine-print plot-scale-note">
-        Scaling changes the figure only. Tables, flags, sensitivity results and entered bounds stay
-        in original units.
+        {scale === 'none'
+          ? 'No transformation: figures and statistics use original values.'
+          : upfront
+            ? 'Transform first: summaries, IQR/modified-Z flags and sensitivity comparisons use transformed values. Figures show those same values.'
+            : 'Figures only: statistics, screening flags and sensitivity comparisons use original values. Lines and box summaries mark transformed original statistics.'}
+        {' Expected bounds always refer to original units.'}
         {scale === 'log10' &&
-          ' Log10 maps 1, 10 and 100 to 0, 1 and 2; all values must be positive. The axis uses the entered numerical units.'}
+          ` Formula: log10(x${pseudocount ? ` + ${pseudocount}` : ''}). The pseudocount is added to every value, not only zeros; all shifted values must be positive. Choose it based on measurement units and scientific context; it can change flags near zero.`}
         {scale === 'zscore' &&
-          ' Z-score subtracts the full-data mean and divides by the sample SD; it is unitless and differs from the modified Z-score used for screening.'}
-        {scale !== 'none' &&
-          ' Reference lines and box summaries mark transformed original statistics, not statistics recalculated after transformation. The value axis is horizontal in the histogram and vertical in the other plots.'}
+          ' Z-score uses the full-data mean and sample SD, is unitless, and does not make data normal. It differs from the modified Z-score used for screening.'}
       </p>
+      <details className="processing-help">
+        <summary>When to transform or filter first</summary>
+        <ul>
+          <li>
+            <strong>Transform first</strong> when relative differences or multiplicative variation
+            are scientifically meaningful (for example, a log scale for right-skewed positive data).
+            Log transformation can change which observations are flagged. Z-scores change units, not
+            distribution shape or, apart from rounding, these screening decisions.
+          </li>
+          <li>
+            <strong>Filter first</strong> when source checks or predefined scientific criteria
+            justify removal. Review original-scale results, export retained original values below,
+            then paste those into a new analysis and select “Analysis and figures”. Document both
+            passes; sensitivity checkboxes alone do not refit the transformation.
+          </li>
+          <li>
+            <strong>Figures only</strong> when you want a clearer view while keeping summaries and
+            screening in the measured units.
+          </li>
+        </ul>
+        <p className="fine-print">
+          {processingDescription(analysis)} A pseudocount is a modeling choice, not a correction for
+          erroneous or below-detection measurements. Compare justified choices and report the
+          constant. <a href="#methods">Methods and limitations</a>.
+        </p>
+      </details>
       {omitted.length > 0 && (
         <p className="message" role="status">
           Reference lines unavailable on this scale: {omitted.join(', ')}. Their original values
@@ -583,7 +683,8 @@ export function Charts({
         {showMedian && (
           <span>
             <i className="median-mark" style={{ background: palette.median }} />
-            {scale === 'none' ? 'Median' : 'Original median'} {format(analysis.summary.median)}
+            {scale === 'none' || upfront ? 'Median' : 'Original median'}{' '}
+            {format(analysis.summary.median)}
           </span>
         )}
       </div>

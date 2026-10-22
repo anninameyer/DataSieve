@@ -672,6 +672,39 @@ input[type='range'] {
   width: auto;
   max-width: 100%;
 }
+.plot-display-controls {
+  align-items: flex-start;
+}
+.plot-display-controls label {
+  flex-wrap: wrap;
+}
+.pseudocount-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.pseudocount-control input[type='number'] {
+  width: 110px;
+}
+.pseudocount-control input[type='checkbox'] {
+  accent-color: #42684a;
+}
+.processing-help,
+.filter-first-help {
+  margin: 12px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.processing-help ul {
+  padding-left: 20px;
+}
+.processing-help li + li {
+  margin-top: 8px;
+}
+.processing-help summary,
+.filter-first-help summary {
+  cursor: pointer;
+}
 .plot-display-controls input[type='range'] {
   width: 100px;
 }

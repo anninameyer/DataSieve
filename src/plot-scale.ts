@@ -1,26 +1,32 @@
 import { type Analysis, summarize } from './core';
 
-export type PlotScale = 'none' | 'log10' | 'zscore';
+import type { PlotScale } from './processing-types';
+export type { PlotScale } from './processing-types';
 
 /** Display transformations only: never refit flags, bounds or sensitivity results. */
-export function plotScale(analysis: Analysis, scale: PlotScale) {
+export function plotScale(analysis: Analysis, scale: PlotScale, pseudocount = 0) {
   const raw = analysis.rows.filter((row) => row.status === 'valid').map((row) => row.value!);
   const { mean, sd } = analysis.summary;
-  const nonpositive = raw.filter((value) => value <= 0).length;
+  const nonpositive = raw.filter((value) => value + pseudocount <= 0).length;
   const error =
-    !raw.length || scale === 'none'
-      ? ''
-      : scale === 'log10' && nonpositive
-        ? `Log10 requires positive values. ${nonpositive} valid observation${nonpositive === 1 ? ' is' : 's are'} zero or negative. Choose another scale; no observations have been removed.`
-        : scale === 'zscore' && (mean === null || sd === null || sd <= 0)
-          ? 'Z-score scaling requires at least two observations and a finite, positive sample SD. Choose another scale for this dataset.'
-          : '';
+    scale === 'log10' && (!Number.isFinite(pseudocount) || pseudocount < 0)
+      ? 'Enter a finite, nonnegative pseudocount, or turn the pseudocount option off.'
+      : !raw.length || scale === 'none'
+        ? ''
+        : scale === 'log10' && nonpositive
+          ? `Log10 requires positive values after adding the pseudocount. ${nonpositive} valid observation${nonpositive === 1 ? ' is' : 's are'} zero or negative after this addition. Choose another scale or a scientifically justified pseudocount; no observations have been removed.`
+          : scale === 'zscore' && (mean === null || sd === null || sd <= 0)
+            ? 'Z-score scaling requires at least two observations and a finite, positive sample SD. Choose another scale for this dataset.'
+            : '';
   function transform(value: number | null): number | null {
     if (value === null || error || !Number.isFinite(value)) return null;
     const result =
       scale === 'log10'
-        ? value > 0
-          ? Math.log10(value)
+        ? value + pseudocount > 0
+          ? Number.isFinite(value + pseudocount)
+            ? Math.log10(value + pseudocount)
+            : Math.log10(Math.max(value, pseudocount)) +
+              Math.log10(1 + Math.min(value, pseudocount) / Math.max(value, pseudocount))
           : NaN
         : scale === 'zscore'
           ? Number.isFinite(value - mean!)
@@ -40,20 +46,27 @@ export function plotScale(analysis: Analysis, scale: PlotScale) {
   };
 }
 
-export function scaleAxisLabel(label: string, scale: PlotScale) {
+export function scaleAxisLabel(label: string, scale: PlotScale, pseudocount = 0) {
   return scale === 'log10'
-    ? `log10(${label})`
+    ? `log10(${label}${pseudocount ? ` + ${pseudocount}` : ''})`
     : scale === 'zscore'
       ? `${label} — z-score (unitless)`
       : label;
 }
 
-export function scaleDescription(analysis: Analysis, scale: PlotScale) {
+export function scaleDescription(analysis: Analysis, scale: PlotScale, pseudocount = 0) {
   if (scale === 'log10')
-    return 'Display scale: log10(value), using the entered numerical units. All valid values must be positive; no offset or pseudocount is added.';
+    return `Transformation: log10(value${pseudocount ? ` + ${pseudocount}` : ''}), using the entered numerical units. Pseudocount c = ${pseudocount}; c is added to every valid value, not only zeros. All shifted values must be positive. No observations are silently removed.`;
   if (scale === 'zscore')
     return `Display scale: z = (value − full-data mean) / full-data sample SD (n − 1 denominator); unitless. Mean = ${analysis.summary.mean}; sample SD = ${analysis.summary.sd}. This is different from the modified Z-score used for screening.`;
   return 'Display scale: none (original values and units).';
+}
+
+/** An upfront analysis already contains transformed values; never apply it twice. */
+export function figureScale(analysis: Analysis, scale: PlotScale, pseudocount = 0) {
+  const upfront = analysis.processing?.scope === 'analysis';
+  const view = plotScale(analysis, upfront ? 'none' : scale, pseudocount);
+  return { ...view, error: upfront ? analysis.processing!.error : view.error };
 }
 
 /** Gaussian KDE bandwidth; a floor bounds Plotly's evaluation work for 50,000 rows. */
@@ -86,8 +99,10 @@ export function omittedReferenceLines(
   analysis: Analysis,
   scale: PlotScale,
   visible: { showRange: boolean; showIqr: boolean; showMean: boolean; showMedian: boolean },
+  pseudocount = 0,
 ) {
-  const view = plotScale(analysis, scale);
+  const upfront = analysis.processing?.scope === 'analysis' && analysis.processing.scale !== 'none';
+  const view = figureScale(analysis, scale, pseudocount);
   if (view.error) return [];
   const candidates: [string, number | null][] = [
     ...(visible.showRange
@@ -110,6 +125,13 @@ export function omittedReferenceLines(
       : []),
   ];
   return candidates
-    .filter(([, value]) => value !== null && view.transform(value) === null)
+    .filter(
+      ([name, value]) =>
+        value !== null &&
+        (upfront && name.startsWith('expected')
+          ? analysis.processing!.boundPositions[name === 'expected minimum' ? 'min' : 'max'] ===
+            null
+          : view.transform(value) === null),
+    )
     .map(([name]) => name);
 }

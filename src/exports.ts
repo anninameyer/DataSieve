@@ -15,6 +15,8 @@ import {
   dataHandlingNotice,
   developmentAcknowledgement,
 } from './references';
+import { processingRows } from './processing';
+import { scaleAxisLabel } from './plot-scale';
 export { methodText } from './references';
 
 export interface Variable {
@@ -111,13 +113,22 @@ export function annotatedRows(
       'within_expected_range',
       'review_classification',
       'excluded_in_sensitivity',
+      'analysis_value',
+      'statistics_scale',
+      'figure_transformation',
+      'transformation_scope',
+      'log10_pseudocount',
+      'zscore_center_original_full_data',
+      'zscore_sample_sd_original_full_data',
+      'expected_range_scale',
+      'transformation_error',
     ],
     ...rows.map((row) => [
       row.row,
       row.originalId,
       row.id,
       row.original,
-      row.value,
+      row.rawValue ?? row.value,
       row.status,
       row.issue,
       indicator(row.iqrFlag),
@@ -131,6 +142,17 @@ export function annotatedRows(
         : indicator(row.plausible),
       row.priority,
       isExcluded(row, criteria),
+      row.value,
+      analysis.processing?.scope === 'analysis' ? analysis.processing.scale : 'original',
+      analysis.processing?.scale ?? 'none',
+      analysis.processing?.scope ?? 'figure',
+      Number.isFinite(analysis.processing?.pseudocount ?? 0)
+        ? (analysis.processing?.pseudocount ?? 0)
+        : 'Invalid / not supplied',
+      analysis.processing?.scale === 'zscore' ? analysis.processing.originalSummary.mean : null,
+      analysis.processing?.scale === 'zscore' ? analysis.processing.originalSummary.sd : null,
+      'original',
+      analysis.processing?.error || 'None',
     ]),
   ];
 }
@@ -144,6 +166,17 @@ export function summaryRows(
   return [
     ['Variable', variable.name],
     ['Unit', variable.unit],
+    [
+      'Statistics scale / label',
+      analysis.processing?.scope === 'analysis'
+        ? scaleAxisLabel(
+            variable.name || 'Value',
+            analysis.processing.scale,
+            analysis.processing.pseudocount,
+          )
+        : 'Original values and units',
+    ],
+    ...processingRows(analysis),
     ['Synthetic example', variable.synthetic],
     ['Software citation', softwareCitation()],
     ['Creator ORCID', SOFTWARE.orcid],
@@ -162,8 +195,8 @@ export function summaryRows(
     ['IQR extreme lower fence', analysis.extremeLow],
     ['IQR extreme upper fence', analysis.extremeHigh],
     ['Modified Z-score absolute threshold', analysis.settings.z],
-    ['Expected minimum (inclusive)', analysis.settings.min],
-    ['Expected maximum (inclusive)', analysis.settings.max],
+    ['Expected minimum (inclusive, original units)', analysis.settings.min],
+    ['Expected maximum (inclusive, original units)', analysis.settings.max],
     [
       'Rows requiring review (includes missing/invalid)',
       analysis.rows.filter((row) => row.priority !== 'No statistical flags').length,

@@ -27,14 +27,14 @@ test('every plot labels scaled axes and transforms original reference statistics
 }) => {
   await page.goto('/');
   await enter(page, [1, 10, 100, 1000]);
-  await expect(page.getByLabel('Display scale', { exact: true })).toHaveValue('none');
+  await expect(page.getByLabel('Transformation', { exact: true })).toHaveValue('none');
   const originalTable = await page.locator('.results-table').innerText();
   await page.getByLabel('Mean line', { exact: true }).check();
   await page.getByLabel('Minimum', { exact: true }).fill('1');
   await page.getByLabel('Maximum', { exact: true }).fill('100');
   for (const kind of ['Histogram', 'Boxplot', 'Violin plot', 'Sorted observations']) {
     await page.getByRole('button', { name: kind, exact: true }).click();
-    await page.getByLabel('Display scale', { exact: true }).selectOption('log10');
+    await page.getByLabel('Transformation', { exact: true }).selectOption('log10');
     await expect(
       page.locator('.plotly-target .xtitle, .plotly-target .ytitle').filter({ hasText: 'log10(' }),
     ).toHaveCount(1);
@@ -62,7 +62,7 @@ test('every plot labels scaled axes and transforms original reference statistics
     if (kind === 'Histogram') expect(graph.axes.yaxis.title.text).toBe('Observations');
     else expect(graph.points).toEqual([0, 1, 2, 3]);
     if (kind === 'Boxplot') expect(graph.box!.q1![0]).toBeCloseTo(Math.log10(7.75));
-    await page.getByLabel('Display scale', { exact: true }).selectOption('zscore');
+    await page.getByLabel('Transformation', { exact: true }).selectOption('zscore');
     await expect(
       page
         .locator('.plotly-target .xtitle, .plotly-target .ytitle')
@@ -77,7 +77,7 @@ test('every plot labels scaled axes and transforms original reference statistics
         }),
       )
       .toBe(0);
-    await page.getByLabel('Display scale', { exact: true }).selectOption('none');
+    await page.getByLabel('Transformation', { exact: true }).selectOption('none');
   }
   // Bounds deliberately changed above; compare after removing them again.
   await page.getByLabel('Minimum', { exact: true }).fill('');
@@ -91,7 +91,7 @@ test('unsupported transformations explain the problem and never silently discard
   await page.goto('/');
   await enter(page, [-1, 0, 10]);
   await page.locator('.figure-settings summary').click();
-  await page.getByLabel('Display scale', { exact: true }).selectOption('log10');
+  await page.getByLabel('Transformation', { exact: true }).selectOption('log10');
   await expect(page.locator('.chart-empty')).toContainText(
     '2 valid observations are zero or negative',
   );
@@ -99,11 +99,11 @@ test('unsupported transformations explain the problem and never silently discard
   await expect(page.getByRole('button', { name: 'Download figure', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Complete dataset' })).toBeEnabled();
   await expect(page.locator('.results-table tbody tr')).toHaveCount(3);
-  await page.getByLabel('Display scale', { exact: true }).selectOption('zscore');
+  await page.getByLabel('Transformation', { exact: true }).selectOption('zscore');
   await expect(page.locator('.barlayer .point').first()).toBeVisible();
   await enter(page, [7, 7, 7]);
   await expect(page.locator('.chart-empty')).toContainText('positive sample SD');
-  await page.getByLabel('Display scale', { exact: true }).selectOption('none');
+  await page.getByLabel('Transformation', { exact: true }).selectOption('none');
   await page.getByRole('button', { name: 'Violin plot', exact: true }).click();
   await expect(page.locator('.violin-note')).toContainText('two distinct values');
   await expect(page.locator('.scatterlayer .point')).toHaveCount(3);
@@ -118,7 +118,7 @@ test('nonpositive log bounds are explicitly disclosed and positive bounds stay a
   await page.getByLabel('Minimum', { exact: true }).fill('0');
   await page.getByLabel('Maximum', { exact: true }).fill('10');
   await page.getByLabel('IQR fences', { exact: true }).check();
-  await page.getByLabel('Display scale', { exact: true }).selectOption('log10');
+  await page.getByLabel('Transformation', { exact: true }).selectOption('log10');
   await expect(
     page.getByRole('status').filter({ hasText: 'Reference lines unavailable' }),
   ).toContainText('expected minimum, mild lower fence, extreme lower fence');
@@ -184,7 +184,7 @@ for (const offline of [false, true]) {
     await page.goto(offline ? pathToFileURL(resolve('offline/RangeSieve.html')).href : '/');
     await enter(page, bimodal);
     await page.getByRole('button', { name: 'Violin plot', exact: true }).click();
-    await page.getByLabel('Display scale', { exact: true }).selectOption('zscore');
+    await page.getByLabel('Transformation', { exact: true }).selectOption('zscore');
     await page.getByLabel('Violin smoothing', { exact: true }).fill('0.5');
     await expect(page.locator('.violinlayer .violin')).toHaveCount(1);
     await page.getByLabel('Horizontal grid lines', { exact: true }).uncheck();
