@@ -22,6 +22,8 @@ In your methods or supplementary material, record:
 
 **Download figure caption** records the figure settings, thresholds, method references and software citation. The analysis report and Excel citation sheets also retain citation information. Include captions, reports and annotated results in supplementary material where sharing is appropriate.
 
+Custom figure titles and axis labels affect presentation only. The matching caption retains the original variable, units, complete transformation settings and the chosen visible text, even when labels are shortened or hidden.
+
 ## Cite the methods you used
 
 The [methods guide](METHODS.md) explains each calculation and its limitations. Cite the substantive methods used in your analysis, following your journal’s requirements.

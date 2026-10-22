@@ -5,7 +5,12 @@ import { escapeHtml } from './exports';
 import { imagePdf, pngMetadata, tiff } from './figure-formats';
 
 export { defaultPalette, figureCaption, type Palette, type FigureFormat } from './figure-model';
-import { figureDescription, type FigureOptions, type FigureFormat } from './figure-model';
+import {
+  figureDescription,
+  resolveFigureText,
+  type FigureOptions,
+  type FigureFormat,
+} from './figure-model';
 import { figureScale } from './plot-scale';
 
 function dataUrlText(url: string): string {
@@ -66,6 +71,7 @@ export async function exportFigure(
   const width = Math.round((options.widthMm / 25.4) * 96),
     height = Math.round((options.heightMm / 25.4) * 96);
   const caption = figureDescription(analysis, options);
+  const text = resolveFigureText(options);
   const target = document.createElement('div');
   target.style.cssText = `position:fixed;left:-10000px;top:0;width:${width}px;height:${height}px;pointer-events:none;`;
   target.setAttribute('aria-hidden', 'true');
@@ -81,19 +87,28 @@ export async function exportFigure(
       uirevision: undefined,
       margin: { l: 65, r: 20, t: 88, b: 170 },
       title: {
-        text: `${escapeHtml(options.label)}<br><sup>${options.kind === 'box' ? 'Boxplot' : options.kind === 'sorted' ? 'Sorted observations' : options.kind === 'violin' ? 'Violin plot' : 'Histogram'} · n = ${analysis.summary.n}</sup>`,
+        text: text.title
+          ? `${escapeHtml(text.title)}<br><sup>${options.kind === 'box' ? 'Boxplot' : options.kind === 'sorted' ? 'Sorted observations' : options.kind === 'violin' ? 'Violin plot' : 'Histogram'} · n = ${analysis.summary.n}</sup>`
+          : '',
         font: { size: 16 },
         x: 0.08,
         xanchor: 'left',
       },
       xaxis: {
         ...layout.xaxis,
+        title: { text: escapeHtml(text.xAxis) },
         autorange: options.kind !== 'box' && options.kind !== 'violin',
         ...(options.kind === 'box' || options.kind === 'violin'
           ? { range: [-0.45, 1] }
           : { range: undefined }),
       },
-      yaxis: { ...layout.yaxis, showgrid: options.showGrid, autorange: true, range: undefined },
+      yaxis: {
+        ...layout.yaxis,
+        title: { text: escapeHtml(text.yAxis) },
+        showgrid: options.showGrid,
+        autorange: true,
+        range: undefined,
+      },
       showlegend: true,
       legend: {
         orientation: 'h',
@@ -141,7 +156,7 @@ export async function exportFigure(
             extension: 'tiff',
           }
         : {
-            content: imagePdf(pixelWidth, pixelHeight, rgba, options.dpi, options.label, caption),
+            content: imagePdf(pixelWidth, pixelHeight, rgba, options.dpi, text.title, caption),
             mime: 'application/pdf',
             extension: 'pdf',
           };

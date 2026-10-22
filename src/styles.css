@@ -716,6 +716,43 @@ input[type='range'] {
 .violin-note {
   line-height: 1.6;
 }
+.figure-text-controls {
+  margin: 20px 0;
+  padding: 14px;
+  border: 1px solid #e4e9de;
+  border-radius: 6px;
+  min-width: 0;
+}
+.figure-text-controls legend {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 6px;
+}
+.figure-text-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+.figure-text-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+}
+.figure-text-field.wide {
+  grid-column: 1 / -1;
+}
+.figure-text-include {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+.figure-text-include input {
+  accent-color: #42684a;
+}
 .segmented {
   display: flex;
   flex-wrap: wrap;

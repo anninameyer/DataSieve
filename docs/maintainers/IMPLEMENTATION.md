@@ -128,6 +128,8 @@ This measures dependence of summary statistics on selected observations. It does
 
 ## Exports and reproducibility
 
+`defaultFigureText`/`resolveFigureText` in `src/figure-model.ts` resolve a single set of plain-text titles/labels for chart preview, caption metadata and all export formats. Value axes prefer the explicit unit, with a full variable-label fallback; log labels use Unicode log₁₀ and exact compact scientific notation for small constants. Analysis labels and full processing descriptions are separate and unchanged. Per-plot overrides use undefined for automatic text and an empty string for deliberate hiding. Dataset changes reset overrides. Labels are escaped before Plotly rendering and XML embedding; they never change numerical results. The exporter independently resolves text rather than depending on stale chart layout; the image-PDF title follows the chosen title too. Neutral metadata preserves visible text and original scientific processing.
+
 - Annotated CSV: source row, original/display identifiers, original/parsed values, status/diagnostic, independent flags, signed Z, review priority, sensitivity exclusion.
 - Review CSV: all non-default review categories, including missing/invalid.
 - Summary CSV: metadata, counts, definitions, all descriptive statistics/MAD, multipliers/fences/Z threshold, expected bounds, selected exclusion criteria, retained statistics, excluded count/percentage, changes, warnings. Blank summary values mean unavailable/not specified.

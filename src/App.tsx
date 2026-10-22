@@ -696,6 +696,8 @@ export default function App() {
                 <Charts
                   analysis={analysis}
                   label={variableLabel}
+                  unit={variable.unit}
+                  datasetKey={appliedSource}
                   canExport={canExport}
                   processingInput={processingInput}
                   onProcessingChange={setProcessingInput}

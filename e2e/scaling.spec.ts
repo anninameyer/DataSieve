@@ -36,7 +36,7 @@ test('every plot labels scaled axes and transforms original reference statistics
     await page.getByRole('button', { name: kind, exact: true }).click();
     await page.getByLabel('Transformation', { exact: true }).selectOption('log10');
     await expect(
-      page.locator('.plotly-target .xtitle, .plotly-target .ytitle').filter({ hasText: 'log10(' }),
+      page.locator('.plotly-target .xtitle, .plotly-target .ytitle').filter({ hasText: 'log₁₀(' }),
     ).toHaveCount(1);
     await expect
       .poll(() =>

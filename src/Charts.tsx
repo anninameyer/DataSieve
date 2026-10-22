@@ -19,6 +19,7 @@ import {
 } from './plot-scale';
 import { processingSettings, type ProcessingInput } from './processing-types';
 import { processingDescription } from './processing';
+import { defaultFigureText, resolveFigureText, type FigureText } from './figure-model';
 
 const markerSymbols: Record<Priority, 'circle' | 'triangle-up' | 'square' | 'diamond'> = {
   'No statistical flags': 'circle',
@@ -54,12 +55,16 @@ export type ChartKind = 'histogram' | 'box' | 'sorted' | 'violin';
 export function Charts({
   analysis,
   label,
+  unit = '',
+  datasetKey,
   canExport = true,
   processingInput,
   onProcessingChange,
 }: {
   analysis: Analysis;
   label: string;
+  unit?: string;
+  datasetKey: string;
   canExport?: boolean;
   processingInput: ProcessingInput;
   onProcessingChange: (value: ProcessingInput) => void;
@@ -83,6 +88,8 @@ export function Charts({
   const [heightMm, setHeightMm] = useState('140');
   const [exportBusy, setExportBusy] = useState(false);
   const [exportNotice, setExportNotice] = useState('');
+  const [figureText, setFigureText] = useState<Partial<Record<ChartKind, FigureText>>>({});
+  useEffect(() => setFigureText({}), [datasetKey]);
   const colors: Record<Priority, string> = {
     'No statistical flags': palette.normal,
     'Statistical outlier': palette.mild,
@@ -93,6 +100,8 @@ export function Charts({
   const figureOptions = {
     kind,
     label,
+    unit,
+    text: figureText[kind],
     bins,
     scale,
     scope,
@@ -108,6 +117,12 @@ export function Charts({
     widthMm: Number(widthMm),
     heightMm: Number(heightMm),
   };
+  const automaticText = defaultFigureText(figureOptions);
+  const visibleText = resolveFigureText(figureOptions);
+  const customText = figureText[kind] ?? {};
+  function changeText(key: keyof FigureText, text: string | undefined) {
+    setFigureText((current) => ({ ...current, [kind]: { ...current[kind], [key]: text } }));
+  }
   const element = useRef<HTMLDivElement>(null);
   const valid = useMemo(() => analysis.rows.filter((row) => row.status === 'valid'), [analysis]);
   const view = useMemo(
@@ -317,18 +332,15 @@ export function Charts({
     }
     const layout: Partial<Layout> = {
       autosize: true,
-      margin: { l: 64, r: 30, t: 24, b: 58 },
+      margin: { l: 64, r: 30, t: visibleText.title ? 52 : 24, b: 58 },
+      title: { text: escapeHtml(visibleText.title), font: { size: 14 }, x: 0.05, xanchor: 'left' },
       paper_bgcolor: 'transparent',
       plot_bgcolor: 'transparent',
       showlegend: false,
       font: { family: 'system-ui, sans-serif', size: 12, color: '#4a4a4a' },
       xaxis: {
         title: {
-          text: vertical
-            ? escapeHtml(scaleAxisLabel(label, scale, pseudocount))
-            : kind === 'sorted'
-              ? 'Observation rank (ordered by value)'
-              : '',
+          text: escapeHtml(visibleText.xAxis),
         },
         showgrid: false,
         zeroline: false,
@@ -336,7 +348,7 @@ export function Charts({
       },
       yaxis: {
         title: {
-          text: vertical ? 'Observations' : escapeHtml(scaleAxisLabel(label, scale, pseudocount)),
+          text: escapeHtml(visibleText.yAxis),
         },
         showgrid: showGrid,
         gridcolor: '#e5e7eb',
@@ -369,6 +381,9 @@ export function Charts({
     upfront,
     scope,
     pseudocount,
+    visibleText.title,
+    visibleText.xAxis,
+    visibleText.yAxis,
   ]);
   const plottedMax = view.values.reduce((max, value) => Math.max(max, Math.abs(value)), 0);
   const unplottable =
@@ -758,6 +773,54 @@ export function Charts({
         >
           Reset figure colors
         </button>
+        <fieldset className="figure-text-controls">
+          <legend>Figure title and axis labels</legend>
+          <p className="fine-print">
+            Applies to this plot in the preview and all figure formats. Leave a field blank for its
+            automatic text, or uncheck “Include” to hide it. Captions keep the full variable, units
+            and processing formula.
+          </p>
+          <div className="figure-text-grid">
+            {(
+              [
+                ['title', 'Figure title'],
+                ['xAxis', 'X-axis label'],
+                ['yAxis', 'Y-axis label'],
+              ] as const
+            ).map(([key, text]) => (
+              <div
+                key={key}
+                className={key === 'title' ? 'figure-text-field wide' : 'figure-text-field'}
+              >
+                <label htmlFor={`figure-text-${key}`}>{text}</label>
+                <input
+                  id={`figure-text-${key}`}
+                  type="text"
+                  value={customText[key] ?? ''}
+                  placeholder={automaticText[key] || 'No label by default'}
+                  disabled={customText[key] === ''}
+                  maxLength={200}
+                  onChange={(event) => changeText(key, event.target.value || undefined)}
+                />
+                <label className="figure-text-include">
+                  <input
+                    type="checkbox"
+                    aria-label={`Include ${text.toLowerCase()}`}
+                    checked={customText[key] !== ''}
+                    onChange={(event) => changeText(key, event.target.checked ? undefined : '')}
+                  />{' '}
+                  Include
+                </label>
+              </div>
+            ))}
+          </div>
+          <button
+            className="button small secondary"
+            onClick={() => setFigureText((current) => ({ ...current, [kind]: {} }))}
+          >
+            Reset figure labels
+          </button>
+        </fieldset>
         <div className="figure-export-controls">
           <label>
             Figure format

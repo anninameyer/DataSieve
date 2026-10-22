@@ -20,6 +20,12 @@ export const defaultPalette = {
 };
 export type Palette = typeof defaultPalette;
 export type FigureFormat = 'png' | 'tiff' | 'pdf' | 'svg';
+/** Undefined uses the automatic text; an empty string intentionally hides a label. */
+export interface FigureText {
+  title?: string;
+  xAxis?: string;
+  yAxis?: string;
+}
 export interface FigureOptions {
   kind: 'histogram' | 'box' | 'sorted' | 'violin';
   scale: PlotScale;
@@ -27,6 +33,8 @@ export interface FigureOptions {
   pseudocount?: number;
   smoothing: number;
   label: string;
+  unit?: string;
+  text?: FigureText;
   bins: number;
   showMean: boolean;
   showMedian: boolean;
@@ -38,6 +46,61 @@ export interface FigureOptions {
   widthMm: number;
   heightMm: number;
 }
+
+/** Compact exact notation for labels; the full numeric value remains in the audit. */
+export function compactConstant(value: number): string {
+  if (!Number.isFinite(value)) return 'c';
+  if (value === 0 || (Math.abs(value) >= 0.001 && Math.abs(value) < 10000)) return String(value);
+  const [mantissa, exponent] = value.toExponential().split('e');
+  const superscript: Record<string, string> = {
+    '-': '⁻',
+    '+': '',
+    '0': '⁰',
+    '1': '¹',
+    '2': '²',
+    '3': '³',
+    '4': '⁴',
+    '5': '⁵',
+    '6': '⁶',
+    '7': '⁷',
+    '8': '⁸',
+    '9': '⁹',
+  };
+  return `${mantissa === '1' ? '' : `${mantissa} × `}10${[...exponent].map((char) => superscript[char]).join('')}`;
+}
+
+type TextOptions = Pick<
+  FigureOptions,
+  'kind' | 'label' | 'unit' | 'scale' | 'pseudocount' | 'text'
+>;
+export function defaultFigureText(options: TextOptions): Required<FigureText> {
+  const measure = options.unit?.trim() || options.label.trim() || 'Value';
+  const constant = options.pseudocount ?? 0;
+  const value =
+    options.scale === 'log10'
+      ? `log₁₀(${measure}${constant !== 0 ? ` + ${compactConstant(constant)}` : ''})`
+      : options.scale === 'zscore'
+        ? 'z-score (unitless)'
+        : measure;
+  return {
+    title: options.label,
+    xAxis:
+      options.kind === 'histogram'
+        ? value
+        : options.kind === 'sorted'
+          ? 'Observation rank (ordered by value)'
+          : '',
+    yAxis: options.kind === 'histogram' ? 'Observations' : value,
+  };
+}
+export function resolveFigureText(options: TextOptions): Required<FigureText> {
+  const automatic = defaultFigureText(options);
+  return {
+    title: options.text?.title ?? automatic.title,
+    xAxis: options.text?.xAxis ?? automatic.xAxis,
+    yAxis: options.text?.yAxis ?? automatic.yAxis,
+  };
+}
 /** Neutral image metadata; credit is provided separately in the downloadable caption. */
 export function figureDescription(analysis: Analysis, options: FigureOptions): string {
   const pseudocount = analysis.processing?.pseudocount ?? options.pseudocount ?? 0;
@@ -48,6 +111,7 @@ export function figureDescription(analysis: Analysis, options: FigureOptions): s
   const omitted = omittedReferenceLines(analysis, options.scale, options, pseudocount);
   return [
     `${options.kind === 'box' ? 'Boxplot' : options.kind === 'sorted' ? 'Sorted observations' : options.kind === 'violin' ? 'Violin plot' : 'Histogram'} of ${options.label}.`,
+    `Visible figure text: ${JSON.stringify(resolveFigureText(options))}. Custom text changes presentation only; the original variable, units and exact processing settings are recorded independently below.`,
     `All ${analysis.summary.n} valid numerical observations; missing and invalid rows are absent from the figure. No sensitivity exclusions are applied to figures.`,
     analysis.processing
       ? processingDescription(analysis)

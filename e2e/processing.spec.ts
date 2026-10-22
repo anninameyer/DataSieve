@@ -38,7 +38,7 @@ test('pseudocount preserves zero samples and scope changes summaries, box statis
   await logWithZeros(page);
   await page.getByLabel('Mean line', { exact: true }).check();
   await page.getByRole('button', { name: 'Boxplot', exact: true }).click();
-  await expect(page.locator('.plotly-target .ytitle')).toHaveText('log10(Value + 1)');
+  await expect(page.locator('.plotly-target .ytitle')).toHaveText('log₁₀(Value + 1)');
   await expect(page.locator('.results-table tbody tr')).toHaveCount(3);
   await expect(page.getByRole('columnheader', { name: 'Analysis value' })).toHaveCount(0);
   await expect
@@ -231,7 +231,7 @@ test('upfront log pseudocount analysis, every plot and unbranded exports work in
     await page.getByRole('button', { name: kind, exact: true }).click();
     await expect(
       page.locator(kind === 'Histogram' ? '.plotly-target .xtitle' : '.plotly-target .ytitle'),
-    ).toHaveText('log10(Value + 1)');
+    ).toHaveText('log₁₀(Value + 1)');
     if (kind !== 'Histogram') {
       const points = await page.locator('.plotly-target').evaluate((element) =>
         (element as Graph).data
@@ -251,7 +251,7 @@ test('upfront log pseudocount analysis, every plot and unbranded exports work in
     expect(text).not.toContain('RangeSieve');
     if (format !== 'pdf') expect(text).toContain('transformationScope');
     if (format === 'svg') {
-      expect(text).toContain('log10(Value + 1)');
+      expect(text).toContain('log₁₀(Value + 1)');
       expect(text).toContain('&quot;pseudocount&quot;:1');
       expect(text).toContain('parse → transform');
     }
