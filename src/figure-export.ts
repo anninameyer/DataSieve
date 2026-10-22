@@ -6,6 +6,7 @@ import { imagePdf, pngMetadata, tiff } from './figure-formats';
 
 export { defaultPalette, figureCaption, type Palette, type FigureFormat } from './figure-model';
 import { figureDescription, type FigureOptions, type FigureFormat } from './figure-model';
+import { plotScale } from './plot-scale';
 
 function dataUrlText(url: string): string {
   const comma = url.indexOf(',');
@@ -48,6 +49,8 @@ export async function exportFigure(
 ) {
   if (!analysis.summary.n)
     throw new Error('Analyze numerical observations before exporting a figure.');
+  const scaleError = plotScale(analysis, options.scale).error;
+  if (scaleError) throw new Error(scaleError);
   const pixelWidth = Math.round((options.widthMm / 25.4) * options.dpi),
     pixelHeight = Math.round((options.heightMm / 25.4) * options.dpi);
   if (
@@ -78,15 +81,17 @@ export async function exportFigure(
       uirevision: undefined,
       margin: { l: 65, r: 20, t: 88, b: 170 },
       title: {
-        text: `${escapeHtml(options.label)}<br><sup>${options.kind === 'box' ? 'Boxplot' : options.kind === 'sorted' ? 'Sorted observations' : 'Histogram'} · n = ${analysis.summary.n}</sup>`,
+        text: `${escapeHtml(options.label)}<br><sup>${options.kind === 'box' ? 'Boxplot' : options.kind === 'sorted' ? 'Sorted observations' : options.kind === 'violin' ? 'Violin plot' : 'Histogram'} · n = ${analysis.summary.n}</sup>`,
         font: { size: 16 },
         x: 0.08,
         xanchor: 'left',
       },
       xaxis: {
         ...layout.xaxis,
-        autorange: options.kind !== 'box',
-        ...(options.kind === 'box' ? { range: [-0.45, 1] } : { range: undefined }),
+        autorange: options.kind !== 'box' && options.kind !== 'violin',
+        ...(options.kind === 'box' || options.kind === 'violin'
+          ? { range: [-0.45, 1] }
+          : { range: undefined }),
       },
       yaxis: { ...layout.yaxis, showgrid: options.showGrid, autorange: true, range: undefined },
       showlegend: true,

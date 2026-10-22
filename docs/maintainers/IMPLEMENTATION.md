@@ -63,6 +63,14 @@ IQR flag: x < L_mild OR x > U_mild. Extreme flag: x < L_extreme OR x > U_extreme
 
 Boxplot whiskers reach the most extreme **observed** values within mild fences. All valid observations are overlaid with deterministic horizontal jitter that does not change their numerical value. Multipliers update fences, whiskers, flags, and sensitivity comparisons. Histogram bins divide the observed span into equal-width intervals. A tiny outer padding (one millionth of the span at each end) includes the maximum in Plotly’s right-open bins; constant samples receive display padding of max(0.5, 1% of the absolute value). Bars aggregate counts; point-level review colors appear in the other plots. Plotly supplies hover/zoom/reset. Scales beyond approximately 10^±100 or overflowing spans receive explicit rescaling guidance instead of a misleading chart; underlying data remains available.
 
+## Figure display transformations and violin density
+
+`src/plot-scale.ts` defines the pure display transformations and explicit violin bandwidth. None is the default. Log10 rejects the whole view if any valid value is nonpositive; no filtering or pseudocount is introduced. Standard z-scores use the original full-data mean and sample SD, with guarded subtraction for extreme opposing signs. Constant/singleton datasets report unavailable standardization. Screening and sensitivity always use original data; transformed observations are not a new analysis dataset.
+
+The value axis is labelled with the transformation (histogram x, otherwise y); original reference lines and precomputed type-7 box summaries are transformed into this coordinate system, rather than refitted. Nonrepresentable enabled reference lines are disclosed in the UI and captions. Histogram bins and Gaussian violin KDE use displayed values. The existing Cartesian Plotly bundle includes violin support. Its internal box/mean displays are disabled to avoid substituting Plotly's quartile convention. Individual review-class symbols remain visible beside the density.
+
+The explicit bandwidth is `max(0.9 × A × n^(-1/5) × smoothing, range/100)`, A = min(sample SD, type-7 IQR/1.34), falling back to SD when IQR is zero. Smoothing is 0.25–2, default 1. The range/100 floor bounds Plotly's bandwidth/3 evaluation grid to approximately 301 positions (about 15 million kernel evaluations for 50,000 rows). Floor activation is disclosed. Fewer than two distinct values show points only. The Gaussian contour uses `spanmode: hard` (observed extrema), is peak-width normalized, and is not boundary-corrected or renormalized. See the user methods guide and Silverman reference for interpretation. Captions and neutral metadata preserve scale parameters, actual bandwidth and omissions. All figure formats and both builds share these settings; tabular exports retain original units.
+
 ## Modified Z-score
 
 ```text

@@ -185,7 +185,7 @@ test('expected-bound, median and mean colors update the rendered reference lines
         rgb,
       );
   }
-  for (const kind of ['Boxplot', 'Sorted observations']) {
+  for (const kind of ['Boxplot', 'Violin plot', 'Sorted observations']) {
     await page.getByRole('button', { name: kind, exact: true }).click();
     for (const [, color, indices] of changes) {
       const rgb = `rgb(${color
@@ -211,7 +211,7 @@ test('horizontal grid visibility applies to every plot and its unbranded SVG exp
   await expect.poll(() => grid.count()).toBeGreaterThan(0);
   await page.getByLabel('Horizontal grid lines', { exact: true }).uncheck();
   await expect(grid).toHaveCount(0);
-  for (const kind of ['Boxplot', 'Sorted observations']) {
+  for (const kind of ['Boxplot', 'Violin plot', 'Sorted observations']) {
     await page.getByRole('button', { name: kind, exact: true }).click();
     await expect(grid).toHaveCount(0);
     await page.getByLabel('Horizontal grid lines', { exact: true }).check();

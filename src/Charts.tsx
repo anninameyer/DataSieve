@@ -10,6 +10,13 @@ import {
   type FigureFormat,
   type Palette,
 } from './figure-export';
+import {
+  omittedReferenceLines,
+  plotScale,
+  scaleAxisLabel,
+  violinBandwidth,
+  type PlotScale,
+} from './plot-scale';
 
 const markerSymbols: Record<Priority, 'circle' | 'triangle-up' | 'square' | 'diamond'> = {
   'No statistical flags': 'circle',
@@ -41,7 +48,7 @@ function LegendSymbol({ priority, color }: { priority: Priority; color: string }
     </svg>
   );
 }
-export type ChartKind = 'histogram' | 'box' | 'sorted';
+export type ChartKind = 'histogram' | 'box' | 'sorted' | 'violin';
 export function Charts({
   analysis,
   label,
@@ -53,6 +60,8 @@ export function Charts({
 }) {
   const [kind, setKind] = useState<ChartKind>('histogram');
   const [bins, setBins] = useState(18);
+  const [scale, setScale] = useState<PlotScale>('none');
+  const [smoothing, setSmoothing] = useState(1);
   const [showMean, setShowMean] = useState(false);
   const [showMedian, setShowMedian] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
@@ -78,6 +87,8 @@ export function Charts({
     kind,
     label,
     bins,
+    scale,
+    smoothing,
     showMean,
     showMedian,
     showGrid,
@@ -90,9 +101,18 @@ export function Charts({
   };
   const element = useRef<HTMLDivElement>(null);
   const valid = useMemo(() => analysis.rows.filter((row) => row.status === 'valid'), [analysis]);
+  const view = useMemo(() => plotScale(analysis, scale), [analysis, scale]);
+  const density = useMemo(() => violinBandwidth(view.values, smoothing), [view, smoothing]);
+  const omitted = omittedReferenceLines(analysis, scale, {
+    showRange,
+    showIqr,
+    showMean,
+    showMedian,
+  });
+  const distribution = kind === 'box' || kind === 'violin';
   const chart = useMemo(() => {
     const { summary } = analysis;
-    const values = valid.map((row) => row.value!);
+    const values = view.values;
     const shapes: Partial<Shape>[] = [];
     const vertical = kind === 'histogram';
     const line = (
@@ -101,7 +121,9 @@ export function Charts({
       dash: 'dot' | 'dash' | 'solid' | 'dashdot' = 'dash',
       name = '',
     ) => {
+      value = view.transform(value);
       if (value === null) return;
+      if (scale !== 'none') name += ' (original units)';
       shapes.push(
         vertical
           ? {
@@ -166,8 +188,8 @@ export function Charts({
     if (showMean) line(summary.mean, palette.mean, 'dash', `Mean = ${format(summary.mean)}`);
     let data: Data[];
     if (kind === 'histogram') {
-      const low = summary.min ?? 0,
-        high = summary.max ?? 1;
+      const low = view.transform(summary.min) ?? 0,
+        high = view.transform(summary.max) ?? 1;
       // Plotly histogram bins are right-open: a small outer pad includes the maximum.
       const padding = low === high ? Math.max(0.5, Math.abs(low) * 0.01) : (high - low) * 1e-6;
       data = [
@@ -181,12 +203,31 @@ export function Charts({
             size: (high - low + padding * 2) / bins,
           },
           marker: { color: palette.normal, line: { color: '#ffffff', width: 1.5 } },
-          hovertemplate: 'Value: %{x}<br>Observations: %{y}<extra></extra>',
+          hovertemplate: `${escapeHtml(scaleAxisLabel(label, scale))}: %{x}<br>Observations: %{y}<extra></extra>`,
         },
       ];
     } else {
       const sorted = [...valid].sort((a, b) => a.value! - b.value!);
       data = [];
+      if (kind === 'violin' && density.bandwidth !== null && !view.error) {
+        data.push({
+          type: 'violin',
+          orientation: 'v',
+          x0: 0,
+          y: values,
+          bandwidth: density.bandwidth,
+          spanmode: 'hard',
+          width: 0.6,
+          points: false,
+          box: { visible: false },
+          meanline: { visible: false },
+          line: { color: palette.normal },
+          fillcolor: `${palette.normal}33`,
+          name: 'Gaussian kernel density',
+          showlegend: false,
+          hoverinfo: 'skip',
+        });
+      }
       if (kind === 'box' && summary.n) {
         const within = sorted.filter(
           (row) =>
@@ -205,11 +246,11 @@ export function Charts({
           type: 'box',
           orientation: 'v',
           x: [0],
-          q1: [summary.q1!],
-          median: [summary.median!],
-          q3: [summary.q3!],
-          lowerfence: [within[0]?.value ?? summary.q1!],
-          upperfence: [within.at(-1)?.value ?? summary.q3!],
+          q1: [view.transform(summary.q1)!],
+          median: [view.transform(summary.median)!],
+          q3: [view.transform(summary.q3)!],
+          lowerfence: [view.transform(within[0]?.value ?? summary.q1)!],
+          upperfence: [view.transform(within.at(-1)?.value ?? summary.q3)!],
           boxpoints: false,
           width: 0.42,
           line: { color: palette.normal },
@@ -232,7 +273,7 @@ export function Charts({
           x: group.map(({ row, index }) =>
             kind === 'sorted' ? index + 1 : 0.36 + ((row.row * 37) % 97) / 300,
           ),
-          y: group.map(({ row }) => row.value!),
+          y: group.map(({ row }) => view.transform(row.value)),
           customdata: group.map(({ row }) => [
             escapeHtml(row.id),
             escapeHtml(row.original),
@@ -246,7 +287,9 @@ export function Charts({
             line: { color: '#333333', width: 0.6 },
           },
           hovertemplate:
-            '%{customdata[0]}<br>Original value: %{customdata[1]}<br>Source row: %{customdata[2]}<extra>' +
+            '%{customdata[0]}<br>Original value: %{customdata[1]}' +
+            (scale === 'none' ? '' : `<br>${escapeHtml(scaleAxisLabel(label, scale))}: %{y}`) +
+            '<br>Source row: %{customdata[2]}<extra>' +
             escapeHtml(priority) +
             '</extra>',
         });
@@ -262,17 +305,17 @@ export function Charts({
       xaxis: {
         title: {
           text: vertical
-            ? escapeHtml(label)
+            ? escapeHtml(scaleAxisLabel(label, scale))
             : kind === 'sorted'
               ? 'Observation rank (ordered by value)'
               : '',
         },
         showgrid: false,
         zeroline: false,
-        ...(kind === 'box' ? { showticklabels: false, range: [-0.45, 1] } : {}),
+        ...(distribution ? { showticklabels: false, range: [-0.45, 1] } : {}),
       },
       yaxis: {
-        title: { text: vertical ? 'Observations' : escapeHtml(label) },
+        title: { text: vertical ? 'Observations' : escapeHtml(scaleAxisLabel(label, scale)) },
         showgrid: showGrid,
         gridcolor: '#e5e7eb',
         zeroline: false,
@@ -281,7 +324,7 @@ export function Charts({
       shapes,
       hovermode: 'closest',
       dragmode: 'zoom',
-      uirevision: `${kind}-${analysis.rows.length}-${summary.min}-${summary.max}-${showRange}-${showIqr}`,
+      uirevision: `${kind}-${scale}-${smoothing}-${analysis.rows.length}-${summary.min}-${summary.max}-${showRange}-${showIqr}`,
     };
     return { data, layout };
   }, [
@@ -296,13 +339,21 @@ export function Charts({
     showIqr,
     label,
     palette,
+    view,
+    scale,
+    smoothing,
+    density,
+    distribution,
   ]);
+  const plottedMax = view.values.reduce((max, value) => Math.max(max, Math.abs(value)), 0);
   const unplottable =
     valid.length > 0 &&
-    (!Number.isFinite(analysis.summary.max! - analysis.summary.min!) ||
-      Math.max(Math.abs(analysis.summary.max!), Math.abs(analysis.summary.min!)) > 1e100 ||
-      (Math.max(Math.abs(analysis.summary.max!), Math.abs(analysis.summary.min!)) > 0 &&
-        Math.max(Math.abs(analysis.summary.max!), Math.abs(analysis.summary.min!)) < 1e-100));
+    (Boolean(view.error) ||
+      !Number.isFinite(
+        view.transform(analysis.summary.max)! - view.transform(analysis.summary.min)!,
+      ) ||
+      plottedMax > 1e100 ||
+      (plottedMax > 0 && plottedMax < 1e-100));
   useEffect(() => {
     if (!element.current) return;
     if (!valid.length || unplottable) {
@@ -362,7 +413,7 @@ export function Charts({
         figureFormat,
       );
       download(
-        `${kind === 'box' ? 'boxplot' : kind === 'sorted' ? 'sorted-observations' : 'histogram'}.${result.extension}`,
+        `${kind === 'box' ? 'boxplot' : kind === 'sorted' ? 'sorted-observations' : kind}.${result.extension}`,
         result.content,
         result.mime,
       );
@@ -383,6 +434,7 @@ export function Charts({
             [
               ['histogram', 'Histogram'],
               ['box', 'Boxplot'],
+              ['violin', 'Violin plot'],
               ['sorted', 'Sorted observations'],
             ] as const
           ).map(([key, text]) => (
@@ -406,15 +458,61 @@ export function Charts({
           </label>
         )}
       </div>
+      <div className="plot-display-controls">
+        <label>
+          Display scale
+          <select
+            aria-label="Display scale"
+            value={scale}
+            onChange={(event) => setScale(event.target.value as PlotScale)}
+          >
+            <option value="none">None (original values)</option>
+            <option value="log10">Log10</option>
+            <option value="zscore">Z-score (mean / sample SD)</option>
+          </select>
+        </label>
+        {kind === 'violin' && (
+          <label>
+            Violin smoothing
+            <input
+              aria-label="Violin smoothing"
+              type="range"
+              min="0.25"
+              max="2"
+              step="0.25"
+              value={smoothing}
+              onChange={(event) => setSmoothing(Number(event.target.value))}
+            />
+            <output>{smoothing}×</output>
+          </label>
+        )}
+      </div>
+      <p className="fine-print plot-scale-note">
+        Scaling changes the figure only. Tables, flags, sensitivity results and entered bounds stay
+        in original units.
+        {scale === 'log10' &&
+          ' Log10 maps 1, 10 and 100 to 0, 1 and 2; all values must be positive. The axis uses the entered numerical units.'}
+        {scale === 'zscore' &&
+          ' Z-score subtracts the full-data mean and divides by the sample SD; it is unitless and differs from the modified Z-score used for screening.'}
+        {scale !== 'none' &&
+          ' Reference lines and box summaries mark transformed original statistics, not statistics recalculated after transformation. The value axis is horizontal in the histogram and vertical in the other plots.'}
+      </p>
+      {omitted.length > 0 && (
+        <p className="message" role="status">
+          Reference lines unavailable on this scale: {omitted.join(', ')}. Their original values
+          remain in the tables and caption.
+        </p>
+      )}
       <div
         className="chart"
         role="img"
-        aria-label={`${kind} of ${valid.length} valid observations. Data and classifications are also available in the results table.`}
+        aria-label={`${kind} of ${valid.length} valid observations; ${scale === 'none' ? 'original values' : scale} display scale. Data and classifications are also available in the results table.`}
       >
         <div ref={element} className="plotly-target" />
         {(!valid.length || unplottable || error) && (
           <div className="chart-empty">
-            {error ||
+            {view.error ||
+              error ||
               (unplottable
                 ? 'This numerical scale exceeds the chart’s supported range. Rescale units to visualize these observations; the original data and statistical results remain available below.'
                 : 'Your distribution will appear here.')}
@@ -424,6 +522,16 @@ export function Charts({
           </div>
         )}
       </div>
+      {kind === 'violin' && valid.length > 0 && !unplottable && (
+        <p className="fine-print violin-note">
+          {density.error ||
+            `Width shows a Gaussian kernel density on the displayed scale (bandwidth ${format(density.bandwidth)}). Wider sections indicate more concentrated observations. Density is drawn only between the observed minimum and maximum.`}
+          {density.limited && ' Bandwidth reached the range/100 computational minimum.'}
+          {
+            ' Peaks depend on smoothing and sample size; they do not prove distinct populations. Compare smoothing settings and the histogram.'
+          }
+        </p>
+      )}
       <div className="chart-options">
         <label>
           <input
@@ -475,7 +583,7 @@ export function Charts({
         {showMedian && (
           <span>
             <i className="median-mark" style={{ background: palette.median }} />
-            Median {format(analysis.summary.median)}
+            {scale === 'none' ? 'Median' : 'Original median'} {format(analysis.summary.median)}
           </span>
         )}
       </div>
@@ -605,10 +713,10 @@ export function Charts({
           </button>
           <button
             className="button secondary"
-            disabled={!canExport || !valid.length}
+            disabled={!canExport || !valid.length || unplottable}
             onClick={() =>
               download(
-                `${kind === 'box' ? 'boxplot' : kind === 'sorted' ? 'sorted-observations' : 'histogram'}-caption.txt`,
+                `${kind === 'box' ? 'boxplot' : kind === 'sorted' ? 'sorted-observations' : kind}-caption.txt`,
                 figureCaption(analysis, figureOptions),
                 'text/plain;charset=utf-8',
               )

@@ -653,9 +653,40 @@ input[type='range'] {
   align-items: center;
   padding: 14px 0 0;
   border-top: 1px solid #eff1ec;
+  flex-wrap: wrap;
+}
+.plot-display-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  margin-top: 12px;
+}
+.plot-display-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.plot-display-controls select {
+  width: auto;
+  max-width: 100%;
+}
+.plot-display-controls input[type='range'] {
+  width: 100px;
+}
+.plot-display-controls output {
+  min-width: 32px;
+  font-variant-numeric: tabular-nums;
+}
+.plot-scale-note,
+.violin-note {
+  line-height: 1.6;
 }
 .segmented {
   display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   background: #f3f5ee;
   border-radius: 6px;
   padding: 3px;

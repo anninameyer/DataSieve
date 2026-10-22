@@ -200,6 +200,8 @@ describe('Accessible defaults, reproducible captions and introductory examples',
     });
     const options = {
       kind: 'sorted' as const,
+      scale: 'none' as const,
+      smoothing: 1,
       label: 'Salt (%)',
       bins: 18,
       showMean: false,

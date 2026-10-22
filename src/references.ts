@@ -50,6 +50,13 @@ export const references = [
     use: 'Definition of MAD and normal-consistency scaling.',
   },
   {
+    id: 'kde',
+    title:
+      'Silverman, B. W. (1986). Density Estimation for Statistics and Data Analysis. Chapman & Hall. p. 48, eq. 3.31.',
+    url: 'https://stat.ethz.ch/R-manual/R-devel/library/stats/html/bandwidth.html',
+    use: 'Gaussian violin density bandwidth rule (0.9 variant), with sample SD fallback for zero IQR, adjustable smoothing and a range/100 computational floor; linked R documentation.',
+  },
+  {
     id: 'palette',
     title: 'Okabe, M., & Ito, K. Color Universal Design.',
     url: 'https://jfly.uni-koeln.de/color/',
@@ -124,6 +131,28 @@ export const methods = [
       'For 1, 2, 3, 4, 10, an expected maximum of 5 selects 10 for exploratory exclusion: 1 of 5 values (20%). Mean changes from 4 to 2.5 (−1.5); median from 3 to 2.5 (−0.5).',
     detail:
       'This shows how much selected observations affect your conclusions; it does not scientifically justify removing them. Missing/invalid values are never in the numerical denominator. If every valid value is excluded, retained summaries are unavailable.',
+  },
+  {
+    title: 'Figure scaling',
+    explanation:
+      'Display scale changes the value axis and figure shape without changing the original data, screening flags, tables or sensitivity analysis. None keeps the entered units. Log10 compresses large positive values. Standard z-scores express distances from the full-data mean in sample standard deviations.',
+    formula:
+      'Log10: t = log10(value). Standard z-score: t = (value − mean) / sample SD, with the n − 1 SD denominator.',
+    example:
+      'Log10 maps 1, 10 and 100 to 0, 1 and 2. For 1, 2, 3, mean = 2 and sample SD = 1, so displayed z-scores are −1, 0 and 1.',
+    detail:
+      'The value axis is y in boxplots, violins and sorted observations, and x in histograms (whose y-axis still counts observations). Log10 requires every valid value to be positive; no rows are silently removed and no offset is added. Z-score scaling needs at least two values and positive finite SD; it differs from the robust modified Z-score used for screening. Reference lines, box quartiles and whiskers are transformed from their original-unit values, not recalculated after transformation. Nonpositive log reference lines are omitted with a notice. Logarithms use the numerical values in the entered units, so specify those units. Histogram bins and violin density are calculated on the displayed scale; scaling can change apparent modality.',
+  },
+  {
+    title: 'Violin plots and smoothing',
+    explanation:
+      'A violin shows a smoothed estimate of the distribution. Wider sections indicate greater concentration of values. Each observation contributes a small Gaussian bell curve; their average gives the kernel density estimate (KDE). Individual observations remain visible beside the violin.',
+    formula:
+      'f(t) = sum exp(−0.5((t − x)/h)²) / (n h √(2π)); h = max[0.9 × A × n^(−1/5) × smoothing, observed range/100], where A = min(sample SD, IQR/1.34), or sample SD if IQR = 0.',
+    example:
+      'Two clusters near 2 and 8 may form two wide lobes with a narrow waist. Lower smoothing can separate nearby peaks; higher smoothing can merge them. Compare the histogram and individual points before interpreting groups.',
+    detail:
+      'The bandwidth h controls smoothing, with a default multiplier of 1 and choices from 0.25 to 2. The rule follows Silverman (1986), p. 48, eq. 3.31; type-7 quartiles are calculated on the displayed values. A range/100 floor bounds computation for large datasets and may prevent very fine peaks from appearing. The displayed contour stops at observed extrema; it is not boundary-corrected or renormalized there. Width is relative to the peak density, not counts. At least two distinct values are required; otherwise only points are shown. Peaks depend on scale, sample size and smoothing and do not demonstrate distinct populations, particularly for small or discrete datasets. Save the matching caption to record the actual bandwidth and scale.',
   },
   {
     title: 'Missing values and numerical limits',

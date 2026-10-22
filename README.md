@@ -4,7 +4,7 @@
 
 RangeSieve helps explore numerical datasets, identify unusual observations, and assess whether values fall within an expected range. No installation, account, or programming is needed.
 
-- Explore interactive histograms, boxplots, and sorted observations.
+- Explore interactive histograms, boxplots, violin plots, and sorted observations, with optional log10 or z-score display scaling.
 - Review potential outliers and compare how selected exclusions affect summary statistics.
 - Export tables as CSV, TSV, or Excel, and figures as PNG, TIFF, PDF, or SVG.
 

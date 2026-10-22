@@ -80,11 +80,39 @@ A range violation might reflect a valid rare event, incorrect units, an unsuitab
 
 ## Read the figures and review table
 
-The histogram groups valid values into equal-width bins. The boxplot shows the median, quartiles and individual observations; its whiskers reach the most distant observed values within the mild IQR fences. The sorted plot places observations in numerical order. Missing and invalid values appear in the table rather than the figures.
+The histogram groups valid values into equal-width bins. The boxplot shows the median, quartiles and individual observations; its whiskers reach the most distant observed values within the mild IQR fences. The violin plot shows a smoothed distribution alongside individual observations. The sorted plot places observations in numerical order. Missing and invalid values appear in the table rather than the figures.
 
 The overall review label prioritizes missing or invalid observations, then values outside the expected range, extreme IQR outliers, other statistical outliers, and finally observations with no statistical flags. Separate flags remain visible: a single observation can meet several criteria. **No statistical flags** does not establish correctness or mean that every check was available.
 
 Use search, sorting and review-only filtering to inspect observations. The underlying dataset is retained. Selecting **Mean line**, **Median line**, **Expected bounds**, **IQR fences** or **Horizontal grid lines** changes the figure display. An expected-bound line requires a specified bound. The histogram’s bin control changes the display rather than the screening thresholds.
+
+### Display scale
+
+Choose **Display scale** above the figure. **None (original values)** is the default. Scaling changes figures only: the review flags, summary tables, sensitivity calculations and data exports continue to use the original values and units. It does not rerun outlier screening on transformed data.
+
+| Scale   | Meaning and example                                                                     | Requirement                                                                                                                                                |
+| ------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| None    | Original values and entered units.                                                      | Any valid numerical data.                                                                                                                                  |
+| Log10   | `log10(value)`: 1, 10 and 100 become 0, 1 and 2. This compresses large positive values. | Every valid observation must be positive. Zero or negative values block this view with an explanation; no observations are removed and no offset is added. |
+| Z-score | `(value − mean) / sample SD`: for 1, 2, 3, mean = 2 and sample SD = 1, giving −1, 0, 1. | At least two values and finite, positive sample SD. Constant datasets cannot use this scale.                                                               |
+
+The z-score scale uses the **full original dataset** and sample SD with denominator `n − 1`; it is unitless and differs from the median/MAD-based **modified Z-score** used for screening. It does not make a distribution normal.
+
+Axis titles indicate the selected transformation: the numerical value is on the **y-axis** in boxplots, violins and sorted observations, and the **x-axis** in histograms. Histogram y-values remain observation counts. Logarithms apply to the numerical values in the entered units, so report those units.
+
+Reference lines, box quartiles and whiskers mark the transformed positions of the **original statistics**. For example, the log10 mean line marks `log10(original mean)`, rather than the mean of the logged values. Type-7 interpolated quartiles can also differ depending on the order of transformation and calculation; boxplots consistently transform the original quartiles. Reference-line legend values remain in original units. A nonpositive expected bound or fence cannot appear on a log10 figure; the application and caption explicitly list omitted lines.
+
+Histogram bins and violin density are calculated **on the displayed values**. Scaling can change apparent distribution shape and the number of visible peaks. Keep the matching caption with your figure to record the transformation and parameters. This display option does not export a new transformed dataset.
+
+### Violin plots
+
+A violin's width represents a **Gaussian kernel density estimate (KDE)**: each observation contributes a small bell curve, and these curves are averaged. Wider sections indicate a greater concentration of values. Two clusters near 2 and 8 may create two wide lobes with a narrow waist. This can help reveal bimodal distributions, but does not establish distinct populations.
+
+Use **Violin smoothing** to vary the bandwidth multiplier from 0.25 to 2 (default 1). Smaller bandwidths reveal finer structure and may introduce spurious peaks; larger bandwidths can merge real peaks. Compare several settings with the histogram and individual points, especially for small, discrete or widely separated data.
+
+On the displayed scale, the bandwidth is `h = max(0.9 × A × n^(−1/5) × smoothing, observed range/100)`, where `A = min(sample SD, IQR/1.34)` and the IQR uses type 7. If IQR = 0, sample SD is used instead. The 0.9 rule follows **Silverman (1986), p. 48, eq. 3.31**, as documented in [R's bandwidth reference](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/bandwidth.html). The range/100 floor bounds calculation time for large datasets; a notice indicates when it prevents further reduction.
+
+The density is `f(t) = Σ exp(−0.5((t − xᵢ)/h)²) / (n h √(2π))`. Width is normalized to the peak density, rather than counts. The contour stops at the smallest and largest observed values; it is not boundary-corrected or renormalized there. This avoids drawing a silhouette beyond observations, but can still distort bounded distributions. At least two distinct valid values are required for a density; otherwise the figure shows individual points with an explanation. The caption records the actual bandwidth, smoothing multiplier and display scale.
 
 ## Sensitivity analysis
 
