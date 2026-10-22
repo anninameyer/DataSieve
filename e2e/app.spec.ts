@@ -268,7 +268,9 @@ test('standalone file works offline with CSP, identical results, all plots and l
   });
   await page.goto(pathToFileURL(resolve('offline/RangeSieve.html')).href);
   await ready(page);
-  await expect(page.locator('.processing-pill')).toHaveText('Runs in your browser');
+  await expect(
+    page.getByRole('link', { name: 'Learn about the statistical methods', exact: true }),
+  ).toHaveAttribute('href', '#methods');
   await expect(page.locator('#citation .development-acknowledgement')).toContainText(
     'GPT-6.1-Sol (high reasoning setting)',
   );

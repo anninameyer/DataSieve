@@ -389,11 +389,9 @@ export default function App() {
             Workspace <span>/</span> <strong>Dataset explorer</strong>
           </span>
           <div className="topbar-right">
-            <span className="processing-pill">
-              <Icon name="browser" size={15} /> Runs in your browser
-            </span>
-            <a href="#methods" aria-label="Read methods and help">
+            <a href="#methods" className="methods-help-link">
               <Icon name="help" />
+              <span>Learn about the statistical methods</span>
             </a>
           </div>
         </header>

@@ -281,19 +281,18 @@ nav small {
   gap: 24px;
 }
 .topbar-right > a {
-  color: #78866c;
+  color: #53624d;
   display: flex;
-}
-.processing-pill {
-  display: flex;
-  gap: 7px;
   align-items: center;
-  border: 1px solid #dce6d7;
-  border-radius: 20px;
-  background: #f0f5ed;
-  color: #55734d;
-  padding: 6px 11px;
-  font-size: 10px;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.methods-help-link svg {
+  flex-shrink: 0;
+}
+.methods-help-link:hover span {
+  text-decoration: underline;
 }
 main {
   padding: 36px 42px 0;
@@ -1784,9 +1783,6 @@ tbody th {
   }
   .topbar-right {
     gap: 17px;
-  }
-  .processing-pill {
-    font-size: 10px;
   }
   .breadcrumb {
     font-size: 10px;

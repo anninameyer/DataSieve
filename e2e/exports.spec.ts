@@ -73,7 +73,17 @@ test('introductory method examples, creator credit and citation are visible with
   await expect(page.locator('.brand')).toHaveText('RangeSieve');
   await expect(page.locator('.brand svg')).toHaveCount(1);
   await expect(page.locator('.brand-sub')).toHaveCount(0);
-  await expect(page.locator('.processing-pill')).toHaveText('Runs in your browser');
+  await expect(page.locator('.processing-pill')).toHaveCount(0);
+  const methodsLink = page.getByRole('link', {
+    name: 'Learn about the statistical methods',
+    exact: true,
+  });
+  await expect(methodsLink).toBeVisible();
+  await expect(methodsLink).toHaveAttribute('href', '#methods');
+  await expect(methodsLink.locator('svg')).toHaveCount(1);
+  await methodsLink.click();
+  await expect(page).toHaveURL(/#methods$/);
+  await expect(page.getByRole('heading', { name: 'Understand the methods' })).toBeInViewport();
   await expect(page.locator('body')).not.toContainText('Private by design');
   await expect(page.locator('.privacy-notice')).toContainText(
     'does not upload it to external servers',
