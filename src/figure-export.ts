@@ -87,9 +87,7 @@ export async function exportFigure(
       uirevision: undefined,
       margin: { l: 65, r: 20, t: 88, b: 170 },
       title: {
-        text: text.title
-          ? `${escapeHtml(text.title)}<br><sup>${options.kind === 'box' ? 'Boxplot' : options.kind === 'sorted' ? 'Sorted observations' : options.kind === 'violin' ? 'Violin plot' : 'Histogram'} · n = ${analysis.summary.n}</sup>`
-          : '',
+        text: text.title ? `${escapeHtml(text.title)}<br><sup>n = ${analysis.summary.n}</sup>` : '',
         font: { size: 16 },
         x: 0.08,
         xanchor: 'left',

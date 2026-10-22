@@ -160,7 +160,7 @@ Under **Figure title and axis labels**, customize the title, x-axis label and y-
 
 Choose PNG, TIFF, PDF or SVG, print size and resolution (300 or 600 DPI for raster formats). **PDF contains a lossless raster image; SVG provides editable vector graphics.** PNG and TIFF include print-resolution information. Check your journal’s figure requirements. Print dimensions are limited to 80–300 mm and raster images to 25 million pixels; the application explains invalid combinations.
 
-Exported figures show **all valid observations**, even when sensitivity exclusions are selected. Export resets zoom to show the full dataset and uses your selected reference lines, colors and horizontal grid setting. The figure and its embedded metadata have no software branding. **Download figure caption** provides thresholds, settings, methods and the software citation separately.
+Exported figures show **all valid observations**, even when sensitivity exclusions are selected. Beneath the figure title, the subtitle shows only **n = the number of valid observations shown**; the plot type is identified in the downloadable caption rather than printed in the artwork. Export resets zoom to show the full dataset and uses your selected reference lines, colors and horizontal grid setting. The figure and its embedded metadata have no software branding. **Download figure caption** provides thresholds, settings, methods and the software citation separately.
 
 ## Local processing and practical limitations
 

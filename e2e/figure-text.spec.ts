@@ -57,12 +57,24 @@ test('automatic value axes are compact in every plot and keep original processin
   await page.goto('/');
   await setup(page);
   const original = await page.locator('.results-table').innerText();
+  await page.locator('.figure-settings summary').click();
+  await page.getByLabel('Figure format', { exact: true }).selectOption('svg');
   for (const kind of ['Histogram', 'Boxplot', 'Violin plot', 'Sorted observations']) {
     await page.getByRole('button', { name: kind, exact: true }).click();
     await expect(
       page.locator(`.plotly-target .${kind === 'Histogram' ? 'x' : 'y'}title`),
     ).toHaveText(shortLabel);
     await expect(page.locator('.plotly-target .gtitle')).toHaveText(fullLabel);
+    const svg = (await download(page, 'Download figure')).toString('utf8');
+    const titleLines = await page.evaluate((text) => {
+      const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+      return [...doc.querySelectorAll('.gtitle > .line')].map((line) =>
+        line.textContent?.replace(/\u200b/g, ''),
+      );
+    }, svg);
+    expect(titleLines).toEqual([fullLabel, 'n = 3']);
+    const caption = (await download(page, 'Download figure caption')).toString('utf8');
+    expect(caption).toContain(`${kind} of ${fullLabel}.`);
   }
   await page.getByLabel('Apply transformation to', { exact: true }).selectOption('analysis');
   await expect(page.locator('.plotly-target .ytitle')).toHaveText(shortLabel);
@@ -156,6 +168,8 @@ for (const offline of [false, true]) {
           );
         }, output.toString('utf8'));
         expect(titles[0]).toContain('Panel A — Mannitol');
+        expect(titles[0]).toContain('n = 3');
+        expect(titles[0]).not.toContain('Violin plot');
         expect(titles[1]).toBe('Samples');
         expect(titles[2]).toBe(shortLabel);
       }
